@@ -79,15 +79,18 @@ jobs:
           cp examples/blackhole-threats.yaml .tmp-config/custom.yaml
           docker run --rm --entrypoint /usr/sbin/blackhole-threats blackhole-threats:test -version
           docker run --rm \
+            --entrypoint /etc/s6-overlay/s6-rc.d/blackhole-threats/run \
             -v "$PWD/.tmp-config:/config" \
             -e BLACKHOLE_THREATS_EXTRA_OPTS="-check-config" \
             blackhole-threats:test
           docker run --rm \
+            --entrypoint /etc/s6-overlay/s6-rc.d/blackhole-threats/run \
             -v "$PWD/.tmp-config:/config" \
             -e BLACKHOLE_THREATS_CONF="/config/custom.yaml" \
             -e BLACKHOLE_THREATS_EXTRA_OPTS="-check-config" \
             blackhole-threats:test
           ! docker run --rm \
+            --entrypoint /etc/s6-overlay/s6-rc.d/blackhole-threats/run \
             -e BLACKHOLE_THREATS_CONF="/config/missing.yaml" \
             blackhole-threats:test
           rm -rf .tmp-config
