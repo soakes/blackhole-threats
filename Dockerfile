@@ -95,7 +95,6 @@ RUN set -eux \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /out/blackhole-threats /usr/sbin/blackhole-threats
-COPY examples/blackhole-threats.yaml /usr/share/blackhole-threats/blackhole-threats.yaml
 COPY packaging/container/rootfs/ /
 
 # Create required directories and service structure
@@ -106,6 +105,7 @@ RUN set -x \
          /etc/s6-overlay/s6-rc.d/user/contents.d \
          /etc/s6-overlay/s6-rc.d/blackhole-threats/log \
          /var/log/blackhole-threats \
+    && touch /etc/s6-overlay/s6-rc.d/blackhole-threats/dependencies.d/base \
     && touch /etc/s6-overlay/s6-rc.d/user/contents.d/blackhole-threats
 
 # Set permissions

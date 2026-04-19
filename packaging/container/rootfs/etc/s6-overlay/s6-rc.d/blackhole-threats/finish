@@ -1,9 +1,13 @@
 #!/command/with-contenv sh
 
+printf '0\n' > /run/s6-linux-init-container-results/exitcode
+
 echo
-printf '[%s] [INFO] =====================================================\n' "$(date '+%Y-%m-%d %H:%M:%S')"
-printf '[%s] [INFO]             Shutting down gracefully...             \n' "$(date '+%Y-%m-%d %H:%M:%S')"
-printf '[%s] [INFO] =====================================================\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] ====================================================="
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO]              Shutting down gracefully..."
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] ====================================================="
 echo
+
+/run/s6/basedir/bin/halt
 
 exit 0

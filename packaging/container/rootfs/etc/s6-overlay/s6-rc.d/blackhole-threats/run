@@ -2,33 +2,61 @@
 exec 2>&1
 
 timestamp() {
-	date '+%Y-%m-%d %H:%M:%S'
+    date '+%Y-%m-%d %H:%M:%S'
 }
 
 log_info() {
-	printf '[%s] [INFO] %s\n' "$(timestamp)" "$*"
+    printf '[%s] [INFO] %s\n' "$(timestamp)" "$1"
 }
 
 DEFAULT_CONF="/config/blackhole-threats.yaml"
 CONF_PATH="${BLACKHOLE_THREATS_CONF:-$DEFAULT_CONF}"
 EXTRA_OPTS="${BLACKHOLE_THREATS_EXTRA_OPTS:-}"
 
+echo
+log_info "====================================================="
+log_info "             Blackhole Threats Service"
+log_info "====================================================="
+log_info ""
+log_info "A BGP RTBH feed service that aggregates threat"
+log_info "intelligence and automatically updates BGP blackhole"
+log_info "routes for network security."
+log_info ""
+log_info "Source: github.com/soakes/blackhole-threats"
+log_info "====================================================="
+echo
+
 if [ ! -f "$CONF_PATH" ]; then
-	if [ "$CONF_PATH" = "$DEFAULT_CONF" ]; then
-		log_info "Creating default configuration at $CONF_PATH"
-		cp /usr/share/blackhole-threats/blackhole-threats.yaml "$CONF_PATH"
-	else
-		log_info "Configuration file not found: $CONF_PATH"
-		exit 1
-	fi
+    if [ "$CONF_PATH" = "$DEFAULT_CONF" ]; then
+        log_info "Creating default configuration file..."
+        cat > "$CONF_PATH" <<'CONF'
+# Default configuration
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.168.1.1"
+  neighbors:
+    - config:
+        neighboraddress: "192.168.1.1"
+        peeras: 64512
+
+feeds:
+#  - url: http://localhost/drop.txt
+#    community: 64512:666
+CONF
+        log_info "Default configuration created at $CONF_PATH"
+        echo
+    else
+        log_info "Configuration file not found: $CONF_PATH"
+        exit 1
+    fi
 fi
 
+set -- /usr/sbin/blackhole-threats -conf "$CONF_PATH"
 if [ -n "$EXTRA_OPTS" ]; then
-	log_info "Starting blackhole-threats with extra options from BLACKHOLE_THREATS_EXTRA_OPTS"
-else
-	log_info "Starting blackhole-threats"
+    # shellcheck disable=SC2086
+    set -- "$@" $EXTRA_OPTS
 fi
 
-log_info "Configuration file: $CONF_PATH"
-
-exec s6-setuidgid root /usr/sbin/blackhole-threats -conf "$CONF_PATH" $EXTRA_OPTS
+exec s6-setuidgid root "$@"

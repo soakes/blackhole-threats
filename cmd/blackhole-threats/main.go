@@ -17,6 +17,12 @@ import (
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC3339,
+	})
+	log.SetOutput(os.Stdout)
+
 	cfgPath := flag.String("conf", "blackhole-threats.yaml", "Configuration file")
 	checkConfig := flag.Bool("check-config", false, "Validate configuration and exit")
 	debug := flag.Bool("debug", false, "Enable debug logging")
@@ -28,7 +34,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("blackhole-threats %s\ncommit: %s\nbuilt: %s\n", buildinfo.Version, buildinfo.Commit, buildinfo.BuildDate)
+		fmt.Printf("blackhole-threats %s\ncommit: %s\nbuilt: %s\n", buildinfo.DisplayVersion(), buildinfo.Commit, buildinfo.BuildDate)
 		return
 	}
 
@@ -57,6 +63,8 @@ func main() {
 		return
 	}
 
+	log.Infof("BGP threat blackhole route server (version %s)", buildinfo.DisplayVersion())
+
 	router, err := bgp.New(&cfg.GoBGP)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to start BGP server")
@@ -73,11 +81,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	log.WithFields(log.Fields{
-		"version": buildinfo.Version,
-		"commit":  buildinfo.Commit,
-		"built":   buildinfo.BuildDate,
-	}).Info("Starting blackhole-threats")
+	log.Info("Server started")
 	if err := router.Run(ctx, feeds, *refreshRate, sigC, *once); err != nil {
 		if stopErr := router.Stop(); stopErr != nil {
 			log.WithError(stopErr).Warn("Failed to stop BGP server cleanly after runtime error")
@@ -85,6 +89,4 @@ func main() {
 		log.WithError(err).Error("Route sync failed")
 		os.Exit(1)
 	}
-
-	log.Info("Shutdown complete")
 }
