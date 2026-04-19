@@ -1,4 +1,4 @@
-blackhole-threats (1.0.0-1) unstable; urgency=medium
+blackhole-threats (1.0.0-1) stable; urgency=medium
 
   * Initial package release for the blackhole-threats RTBH route server.
   * Package the daemon with systemd integration, packaged defaults, and the
