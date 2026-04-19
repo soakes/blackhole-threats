@@ -240,7 +240,7 @@ jobs:
           find . -type f ! -name 'sha256sums.txt' -print0 | sort -z | xargs -0 sha256sum > sha256sums.txt
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: dist/release-notes.md
           files: dist/**/*
