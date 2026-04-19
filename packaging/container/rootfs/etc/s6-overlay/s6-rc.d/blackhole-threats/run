@@ -1,0 +1,34 @@
+#!/bin/sh
+exec 2>&1
+
+timestamp() {
+	date '+%Y-%m-%d %H:%M:%S'
+}
+
+log_info() {
+	printf '[%s] [INFO] %s\n' "$(timestamp)" "$*"
+}
+
+DEFAULT_CONF="/config/blackhole-threats.yaml"
+CONF_PATH="${BLACKHOLE_THREATS_CONF:-$DEFAULT_CONF}"
+EXTRA_OPTS="${BLACKHOLE_THREATS_EXTRA_OPTS:-}"
+
+if [ ! -f "$CONF_PATH" ]; then
+	if [ "$CONF_PATH" = "$DEFAULT_CONF" ]; then
+		log_info "Creating default configuration at $CONF_PATH"
+		cp /usr/share/blackhole-threats/blackhole-threats.yaml "$CONF_PATH"
+	else
+		log_info "Configuration file not found: $CONF_PATH"
+		exit 1
+	fi
+fi
+
+if [ -n "$EXTRA_OPTS" ]; then
+	log_info "Starting blackhole-threats with extra options from BLACKHOLE_THREATS_EXTRA_OPTS"
+else
+	log_info "Starting blackhole-threats"
+fi
+
+log_info "Configuration file: $CONF_PATH"
+
+exec s6-setuidgid root /usr/sbin/blackhole-threats -conf "$CONF_PATH" $EXTRA_OPTS

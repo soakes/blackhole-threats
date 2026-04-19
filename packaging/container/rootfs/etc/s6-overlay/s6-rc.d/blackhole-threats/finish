@@ -1,0 +1,9 @@
+#!/command/with-contenv sh
+
+echo
+printf '[%s] [INFO] =====================================================\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+printf '[%s] [INFO]             Shutting down gracefully...             \n' "$(date '+%Y-%m-%d %H:%M:%S')"
+printf '[%s] [INFO] =====================================================\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+echo
+
+exit 0

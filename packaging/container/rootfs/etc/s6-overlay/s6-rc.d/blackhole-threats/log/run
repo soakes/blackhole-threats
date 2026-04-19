@@ -1,0 +1,3 @@
+#!/bin/sh
+exec -n
+exec s6-log -bp T n20 s1000000 /var/log/blackhole-threats

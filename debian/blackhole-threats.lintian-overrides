@@ -1,0 +1,9 @@
+# This package is published through the project's own APT repository rather
+# than the Debian archive, so the Debian-specific initial-upload workflow check
+# is not relevant here.
+initial-upload-closes-no-bugs
+
+# Static linking is intentional so the same packaging rules can build the
+# published Debian artifacts reproducibly across architectures without requiring
+# per-architecture cross C toolchains.
+statically-linked-binary

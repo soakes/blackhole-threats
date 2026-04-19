@@ -1,0 +1,11 @@
+blackhole-threats (1.0.0-1) unstable; urgency=medium
+
+  * Initial package release for the blackhole-threats RTBH route server.
+  * Package the daemon with systemd integration, packaged defaults, and the
+    reference example configuration.
+  * Install the blackhole-threats(8) manual page and support immediate feed
+    refresh through `systemctl reload blackhole-threats`.
+  * Embed build metadata in source and package builds and validate the package
+    on Debian trixie.
+
+ -- Simon Oakes <813389+soakes@users.noreply.github.com>  Sun, 19 Apr 2026 18:30:00 +0100

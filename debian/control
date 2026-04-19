@@ -1,0 +1,20 @@
+Source: blackhole-threats
+Section: net
+Priority: optional
+Maintainer: Simon Oakes <813389+soakes@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               golang-any (>= 2:1.24~) | golang-go (>= 2:1.24~)
+Standards-Version: 4.6.2
+Homepage: https://github.com/soakes/blackhole-threats
+Rules-Requires-Root: no
+Vcs-Browser: https://github.com/soakes/blackhole-threats
+Vcs-Git: https://github.com/soakes/blackhole-threats.git
+XS-Go-Import-Path: github.com/soakes/blackhole-threats
+
+Package: blackhole-threats
+Architecture: linux-any
+Depends: ${misc:Depends}
+Description: Threat-feed-driven RTBH route server
+ Stand-alone BGP route server based on GoBGP which downloads IPv4/v6 threat
+ feeds on a periodic basis, summarises them, and maintains them as routes.
+ Routers can then iBGP peer with it and blackhole these routes.

@@ -1,0 +1,95 @@
+.TH BLACKHOLE-THREATS 8 "April 2026" "blackhole-threats" "System Administration"
+.SH NAME
+blackhole-threats \- threat-feed-driven RTBH route server
+.SH SYNOPSIS
+.B blackhole-threats
+[\fB-check-config\fR]
+[\fB-conf\fR \fIPATH\fR]
+[\fB-debug\fR]
+[\fB-feed\fR \fISOURCE\fR]
+[\fB-once\fR]
+[\fB-refresh-rate\fR \fIDURATION\fR]
+[\fB-version\fR]
+.SH DESCRIPTION
+.B blackhole-threats
+loads a GoBGP configuration and a set of local or remote threat feeds from a
+YAML configuration file, extracts IPv4 and IPv6 prefixes, summarises them, and
+announces the resulting routes over BGP for remote-triggered blackhole use.
+.PP
+The daemon maintains the currently advertised route set across refresh cycles.
+If a feed refresh fails for a community, the last known-good routes for that
+community are kept until the next successful refresh.
+.SH OPTIONS
+.TP
+.B \-check-config
+Validate the configuration and exit without starting the BGP server.
+.TP
+.BI \-conf " PATH"
+Read configuration from
+.IR PATH .
+The default path is
+.IR blackhole-threats.yaml .
+.TP
+.B \-debug
+Enable debug logging.
+.TP
+.BI \-feed " SOURCE"
+Add an extra threat feed without editing the YAML configuration. This option
+may be supplied more than once.
+.TP
+.B \-once
+Run a single refresh cycle and exit.
+.TP
+.BI \-refresh-rate " DURATION"
+Set the periodic refresh interval. The default is
+.BR 2h .
+.TP
+.B \-version
+Print version, commit, and build date information and exit.
+.SH FILES
+.TP
+.I /etc/blackhole-threats.yaml
+Default Debian package configuration file.
+.TP
+.I /etc/default/blackhole-threats
+Optional systemd environment overrides for the packaged service.
+.TP
+.I /usr/share/doc/blackhole-threats/examples/blackhole-threats.yaml
+Packaged reference configuration example.
+.SH SIGNALS
+.TP
+.B SIGUSR1
+Trigger an immediate feed refresh without waiting for the next scheduled
+refresh interval.
+.TP
+.B SIGINT
+Request a graceful shutdown.
+.TP
+.B SIGTERM
+Request a graceful shutdown.
+.SH EXAMPLES
+Validate a configuration file:
+.PP
+.RS
+.EX
+blackhole-threats -conf /etc/blackhole-threats.yaml -check-config
+.EE
+.RE
+.PP
+Run a single refresh cycle with a temporary unprivileged BGP port:
+.PP
+.RS
+.EX
+blackhole-threats -conf /tmp/blackhole-threats.yaml -once
+.EE
+.RE
+.PP
+Trigger an immediate refresh for the packaged systemd service:
+.PP
+.RS
+.EX
+systemctl reload blackhole-threats
+.EE
+.RE
+.SH SEE ALSO
+.BR systemctl (1)

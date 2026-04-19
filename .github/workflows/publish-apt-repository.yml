@@ -1,0 +1,225 @@
+name: Publish Signed Debian Repository
+
+on:
+  push:
+    tags:
+      - v*
+
+concurrency:
+  group: publish-apt-repository
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release-tag:
+    name: Verify Release Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Ensure release tag points to main
+        run: |
+          git fetch origin main --depth=1
+          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+
+  build:
+    name: Build Signed Debian Repository
+    needs:
+      - verify-release-tag
+    runs-on: ubuntu-latest
+    environment:
+      name: apt-repository
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Compute build metadata
+        id: meta
+        run: |
+          echo "version=${GITHUB_REF_NAME:-dev}" >> "$GITHUB_OUTPUT"
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          echo "site_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
+
+      - name: Build APT repository in Debian trixie
+        run: |
+          docker run --rm \
+            -e DEBIAN_FRONTEND=noninteractive \
+            -e VERSION=${{ steps.meta.outputs.version }} \
+            -e COMMIT=${{ github.sha }} \
+            -e BUILD_DATE=${{ steps.meta.outputs.build_date }} \
+            -v "$PWD:/src" \
+            -w /src \
+            debian:trixie \
+            bash -lc '
+              apt-get update
+              apt-get install -y apt-utils debhelper golang-any build-essential devscripts dpkg-dev git xz-utils
+              mkdir -p site
+              bash scripts/build-apt-repository.sh site "${VERSION}" "${COMMIT}" "${BUILD_DATE}"
+            '
+
+      - name: Import archive signing key
+        id: signing
+        env:
+          APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+          APT_GPG_KEY_ID: ${{ secrets.APT_GPG_KEY_ID }}
+        run: |
+          test -n "${APT_GPG_PRIVATE_KEY}"
+          export GNUPGHOME="${RUNNER_TEMP}/gnupg"
+          mkdir -p "${GNUPGHOME}"
+          chmod 700 "${GNUPGHOME}"
+          printf '%s' "${APT_GPG_PRIVATE_KEY}" | gpg --batch --import
+          key_id="${APT_GPG_KEY_ID}"
+          if [ -z "${key_id}" ]; then
+            key_id="$(gpg --batch --list-secret-keys --with-colons | awk -F: '$1 == "fpr" { print $10; exit }')"
+          fi
+          test -n "${key_id}"
+          fingerprint="$(gpg --batch --with-colons --fingerprint "${key_id}" | awk -F: '$1 == "fpr" { print $10; exit }')"
+          test -n "${fingerprint}"
+          pretty_fingerprint="$(printf '%s' "${fingerprint}" | sed 's/.\{4\}/& /g; s/ $//')"
+          echo "gnupg_home=${GNUPGHOME}" >> "$GITHUB_OUTPUT"
+          echo "key_id=${key_id}" >> "$GITHUB_OUTPUT"
+          echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
+          echo "pretty_fingerprint=${pretty_fingerprint}" >> "$GITHUB_OUTPUT"
+
+      - name: Export archive public key
+        env:
+          GNUPGHOME: ${{ steps.signing.outputs.gnupg_home }}
+        run: |
+          gpg --batch --yes --armor --export "${{ steps.signing.outputs.key_id }}" > site/blackhole-threats-archive-keyring.asc
+          gpg --batch --yes --export "${{ steps.signing.outputs.key_id }}" > site/blackhole-threats-archive-keyring.gpg
+          printf '%s\n' "${{ steps.signing.outputs.pretty_fingerprint }}" > site/blackhole-threats-archive-keyring.fingerprint.txt
+
+      - name: Sign repository metadata
+        env:
+          GNUPGHOME: ${{ steps.signing.outputs.gnupg_home }}
+          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+        run: |
+          passphrase_args=()
+          if [ -n "${APT_GPG_PASSPHRASE}" ]; then
+            passphrase_args=(--pinentry-mode loopback --passphrase "${APT_GPG_PASSPHRASE}")
+          fi
+          release_file="site/dists/stable/Release"
+          gpg --batch --yes "${passphrase_args[@]}" \
+            --local-user "${{ steps.signing.outputs.key_id }}" \
+            --armor --detach-sign \
+            --output "${release_file}.gpg" \
+            "${release_file}"
+          gpg --batch --yes "${passphrase_args[@]}" \
+            --local-user "${{ steps.signing.outputs.key_id }}" \
+            --clearsign \
+            --output "site/dists/stable/InRelease" \
+            "${release_file}"
+
+      - name: Smoke test signed repository with APT
+        run: |
+          repo_root="$(pwd)/site"
+          apt_root="$(mktemp -d)"
+          mkdir -p \
+            "${apt_root}/etc/apt/keyrings" \
+            "${apt_root}/etc/apt/sources.list.d" \
+            "${apt_root}/var/lib/apt/lists/partial" \
+            "${apt_root}/var/cache/apt/archives/partial" \
+            "${apt_root}/var/lib/dpkg" \
+            "${apt_root}/downloads" \
+            "${apt_root}/src"
+          cp site/blackhole-threats-archive-keyring.gpg "${apt_root}/etc/apt/keyrings/"
+          touch "${apt_root}/var/lib/dpkg/status"
+          cat > "${apt_root}/etc/apt/sources.list" <<EOF
+          deb [signed-by=${apt_root}/etc/apt/keyrings/blackhole-threats-archive-keyring.gpg] file:${repo_root} stable main
+          deb-src [signed-by=${apt_root}/etc/apt/keyrings/blackhole-threats-archive-keyring.gpg] file:${repo_root} stable main
+          EOF
+
+          apt_args=(
+            -o "Dir=${apt_root}"
+            -o "Dir::Etc::sourcelist=${apt_root}/etc/apt/sources.list"
+            -o "Dir::Etc::sourceparts=${apt_root}/etc/apt/sources.list.d"
+            -o "Dir::State::status=${apt_root}/var/lib/dpkg/status"
+            -o "Dir::State::Lists=${apt_root}/var/lib/apt/lists"
+            -o "Dir::Cache::Archives=${apt_root}/var/cache/apt/archives"
+            -o "APT::Architecture=amd64"
+            -o "APT::Get::List-Cleanup=0"
+          )
+
+          apt-get "${apt_args[@]}" update
+          apt-cache "${apt_args[@]}" policy blackhole-threats
+          (
+            cd "${apt_root}/downloads"
+            apt-get "${apt_args[@]}" download blackhole-threats
+          )
+          (
+            cd "${apt_root}/src"
+            apt-get "${apt_args[@]}" source blackhole-threats
+          )
+
+      - name: Write repository landing page
+        run: |
+          cat > site/index.html <<EOF
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>blackhole-threats Debian Repository</title>
+            <style>
+              body { font-family: sans-serif; max-width: 48rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.6; }
+              code, pre { background: #f5f5f5; border-radius: 0.35rem; }
+              code { padding: 0.15rem 0.35rem; }
+              pre { padding: 1rem; overflow-x: auto; }
+            </style>
+          </head>
+          <body>
+            <h1>blackhole-threats Debian Repository</h1>
+            <p>This GitHub Pages site publishes the signed APT repository for blackhole-threats.</p>
+            <p>Repository URL:</p>
+            <pre><code>${{ steps.meta.outputs.site_url }}</code></pre>
+            <p>Archive key:</p>
+            <pre><code>${{ steps.meta.outputs.site_url }}blackhole-threats-archive-keyring.gpg</code></pre>
+            <p>Archive key fingerprint:</p>
+            <pre><code>${{ steps.signing.outputs.pretty_fingerprint }}</code></pre>
+            <p>Fingerprint file:</p>
+            <pre><code>${{ steps.meta.outputs.site_url }}blackhole-threats-archive-keyring.fingerprint.txt</code></pre>
+            <p>Add it to APT with:</p>
+            <pre><code>Types: deb deb-src
+            URIs: ${{ steps.meta.outputs.site_url }}
+            Suites: stable
+            Components: main
+            Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg</code></pre>
+            <p>The repository publishes both binary and source package indexes.</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    name: Deploy Debian Repository
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
