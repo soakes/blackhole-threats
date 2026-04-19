@@ -1,0 +1,98 @@
+name: Automated Release Tag
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Validate
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: automated-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  tag:
+    name: Create Release Tag
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
+    runs-on: ubuntu-latest
+
+    env:
+      RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ env.RELEASE_SHA }}
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Skip if release tag already exists on HEAD
+        id: existing
+        run: |
+          existing_tag="$(git tag --points-at "${RELEASE_SHA}" --list 'v*' | head -n1 || true)"
+          if [ -n "${existing_tag}" ]; then
+            echo "release_required=false" >> "${GITHUB_OUTPUT}"
+            echo "existing_tag=${existing_tag}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "release_required=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Compute next release tag
+        id: release
+        if: steps.existing.outputs.release_required == 'true'
+        run: |
+          while IFS='=' read -r key value; do
+            echo "${key}=${value}" >> "${GITHUB_OUTPUT}"
+          done < <(bash scripts/next-release.sh)
+
+      - name: Create and push release tag
+        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.release.outputs.next_tag }}" -m "Release ${{ steps.release.outputs.next_tag }}"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.release.outputs.next_tag }}"
+
+      - name: Dispatch tag-driven publish workflows
+        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run container-image.yml --ref "${{ steps.release.outputs.next_tag }}"
+          gh workflow run release-assets.yml --ref "${{ steps.release.outputs.next_tag }}"
+          gh workflow run publish-apt-repository.yml --ref "${{ steps.release.outputs.next_tag }}"
+
+      - name: Write workflow summary
+        run: |
+          if [ "${{ steps.existing.outputs.release_required }}" = "false" ]; then
+            printf 'Release tag already present on HEAD: `%s`\n' "${{ steps.existing.outputs.existing_tag }}" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          if [ "${{ steps.release.outputs.release_required }}" != "true" ]; then
+            printf 'No releasable commits were found since `%s`; skipping automated tagging.\n' "${{ steps.release.outputs.previous_tag }}" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          printf 'Created automated release tag `%s` (%s bump from `%s`).\n' \
+            "${{ steps.release.outputs.next_tag }}" \
+            "${{ steps.release.outputs.bump }}" \
+            "${{ steps.release.outputs.previous_tag }}" >> "${GITHUB_STEP_SUMMARY}"

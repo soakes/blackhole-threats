@@ -469,7 +469,8 @@ sudo systemctl reload blackhole-threats
 
 ## APT Repository
 
-Tagged releases publish a signed APT repository through GitHub Pages.
+Automated `v*` releases from `main` publish a signed APT repository through
+GitHub Pages.
 
 Repository base URL:
 
@@ -544,8 +545,10 @@ refresh for this repository.
   - runs formatting, vetting, tests, native build checks, binary smoke tests, Debian package validation, unsigned APT repository layout validation, and cross-build validation
 - `Container Image`
   - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms, and publishes to GHCR
+- `Automated Release Tag`
+  - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic `v*` tag from conventional commit history, creates the tag, and dispatches the publish workflows
 - `Release Assets`
-  - builds tagged release binaries plus Debian binary and source packages, generates checksums, and publishes GitHub Releases
+  - builds tagged release binaries plus Debian binary and source packages, generates checksums, writes release notes from commit history, and publishes GitHub Releases
 - `Publish Signed Debian Repository`
   - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, signs the repository, and deploys it to GitHub Pages
 - `Refresh Build and Runtime Pins`
@@ -561,6 +564,11 @@ refresh for this repository.
 
 - Pull requests run validation jobs only; they do not run the signed repository
   publisher or release publisher
+- `main` is treated as releaseable: each merge to `main` can become the next
+  automated tagged release
+- automated version bumps use `feat` for minor releases, `fix`/`perf`/`revert`/
+  `container`/`build`/`deps`/`packaging` for patch releases, and
+  `BREAKING CHANGE:` or `type!:` for major releases
 - The signed Debian repository workflow only runs on `v*` tags that point to
   commits already contained in `main`
 - The GitHub release workflow only runs on `v*` tags that point to commits
@@ -581,6 +589,7 @@ blackhole-threats/
 ├── .github/
 │   ├── dependabot.yml
 │   └── workflows/
+│       ├── automated-release.yml
 │       ├── build-and-validate.yml
 │       ├── container-image.yml
 │       ├── publish-apt-repository.yml
@@ -694,6 +703,7 @@ Contributions should preserve the operator-facing behavior of the project:
 - keep runtime behavior easy to understand
 - preserve packaging and release reproducibility
 - avoid undocumented surprises in routing behavior
+- keep `main` in a releasable state
 
 ### Local Validation
 
@@ -714,6 +724,13 @@ make package
 
 ### Pull Request Expectations
 
+- use conventional commit subjects for merge commits and squashed PRs
+- include a meaningful commit body when the change affects operators,
+  packaging, release flow, or security posture
+- assume merged `main` commits are eligible for automated tagging and release
+- use a release-bearing type when the change should publish artifacts;
+  `docs`, `ci`, `chore`, `test`, and `refactor` do not cut a release by
+  default
 - explain the operational reason for the change
 - keep README, packaging, and workflow docs in sync with behavior
 - include test coverage or a verification note when code paths change
@@ -721,6 +738,34 @@ make package
 - do not broaden workflow permissions or secret exposure without a clear
   operational reason
 - keep release and publishing workflows safe for a public repository
+
+### Commit Message Guidance
+
+Release notes are generated from commit history, so commit messages should be
+written as release inputs rather than throwaway local notes.
+
+Preferred shape:
+
+```text
+feat(container): restore startup banner and default config flow
+
+Align the s6 runtime output with the documented container contract.
+Restore the first-run config generation text and graceful shutdown banner.
+Keep the image publish path suitable for automated release notes.
+```
+
+Practical rules:
+
+- keep the subject in conventional commit form
+- make the subject describe the visible outcome, not just the file touched
+- use the body to explain operator impact, packaging changes, or security
+  implications
+- use `feat`, `fix`, `perf`, `revert`, `container`, `build`, `deps`, or
+  `packaging` when the change should trigger an automated release
+- use `BREAKING CHANGE:` in the body when the release should force a major
+  version bump
+- do not merge work to `main` unless you are happy for automation to tag and
+  publish it
 
 ### Useful Contribution Areas
 

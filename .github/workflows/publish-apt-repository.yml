@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - v*
+  workflow_dispatch:
 
 concurrency:
   group: publish-apt-repository
@@ -15,6 +16,7 @@ permissions:
 jobs:
   verify-release-tag:
     name: Verify Release Tag
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
@@ -31,6 +33,7 @@ jobs:
 
   build:
     name: Build Signed Debian Repository
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - verify-release-tag
     runs-on: ubuntu-latest
@@ -66,6 +69,7 @@ jobs:
             bash -lc '
               apt-get update
               apt-get install -y apt-utils debhelper golang-any build-essential devscripts dpkg-dev git xz-utils
+              bash scripts/prepare-debian-changelog.sh "${VERSION}"
               mkdir -p site
               bash scripts/build-apt-repository.sh site "${VERSION}" "${COMMIT}" "${BUILD_DATE}"
             '
@@ -209,6 +213,7 @@ jobs:
 
   deploy:
     name: Deploy Debian Repository
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - build
     runs-on: ubuntu-latest

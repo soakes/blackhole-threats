@@ -203,8 +203,26 @@ automation.
   current turn after reviewing the changes.
 - Keep changes focused by concern: runtime logic, packaging, container, docs,
   and workflow hardening should be split when practical.
+- Commits intended for `main` should follow a conventional format such as
+  `feat: ...`, `fix: ...`, `docs: ...`, `ci: ...`, or `container: ...`.
+- Write a meaningful commit body whenever the change affects operators,
+  packaging, release behavior, or security posture. Release-note automation uses
+  the subject and body text, so the body should state what changed, why it
+  changed, and any impact worth calling out publicly.
+- Automated version bumps treat `feat` as minor, `fix`/`perf`/`revert`/
+  `container`/`build`/`deps`/`packaging` as patch, and `BREAKING CHANGE:` or
+  `type!:` as major. `docs`, `ci`, `chore`, `test`, and `refactor` do not cut a
+  release by default unless they are intentionally expressed with a
+  release-bearing type.
 - If you choose a subject prefix, prefer clear conventional-style prefixes.
   Existing repo automation already uses `chore`, `ci`, `deps`, and `container`.
+- Treat `main` as releaseable: after `Build and Validate` passes for a push to
+  `main`, the release workflow can automatically create the next `v*` tag from
+  merged commit history and dispatch the publish workflows. Do not merge
+  partial work to `main` that should not become a published release.
+- Do not hand-push routine `v*` tags. Automated tagging from `main` is the
+  normal release path; manual tags should be reserved for an explicit recovery
+  or operator-directed exception.
 - Pull requests should explain:
   - the operational reason for the change
   - any routing, packaging, or upgrade impact

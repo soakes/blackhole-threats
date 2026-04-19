@@ -37,6 +37,9 @@ jobs:
       - name: Check shell scripts
         run: |
           bash -n scripts/build-apt-repository.sh
+          bash -n scripts/generate-release-notes.sh
+          bash -n scripts/next-release.sh
+          bash -n scripts/prepare-debian-changelog.sh
           sh -n packaging/container/rootfs/etc/s6-overlay/s6-rc.d/blackhole-threats/run
           sh -n packaging/container/rootfs/etc/s6-overlay/s6-rc.d/blackhole-threats/log/run
           sh -n packaging/container/rootfs/etc/s6-overlay/s6-rc.d/blackhole-threats/finish
@@ -84,13 +87,14 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
+          echo "version=0.0.0~ci${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Validate Debian package in Debian trixie
         run: |
           docker run --rm \
             -e DEBIAN_FRONTEND=noninteractive \
-            -e VERSION=ci-${{ github.run_number }} \
+            -e VERSION=${{ steps.meta.outputs.version }} \
             -e COMMIT=${{ github.sha }} \
             -e BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             -v "$PWD:/src" \
@@ -99,6 +103,7 @@ jobs:
             bash -lc '
               apt-get update
               apt-get install -y debhelper golang-any build-essential devscripts lintian ca-certificates systemd
+              bash scripts/prepare-debian-changelog.sh "${VERSION}"
               make package VERSION="${VERSION}" COMMIT="${COMMIT}" BUILD_DATE="${BUILD_DATE}"
               deb="$(find .. -maxdepth 1 -type f -name "blackhole-threats_*_*.deb" | head -n1)"
               test -n "${deb}"
@@ -138,7 +143,7 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=ci-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "version=0.0.0~ci${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Build and smoke test unsigned APT repository in Debian trixie
@@ -154,6 +159,7 @@ jobs:
             bash -lc '
               apt-get update
               apt-get install -y apt-utils debhelper golang-any build-essential devscripts dpkg-dev git xz-utils
+              bash scripts/prepare-debian-changelog.sh "${VERSION}"
               mkdir -p site
               bash scripts/build-apt-repository.sh site "${VERSION}" "${COMMIT}" "${BUILD_DATE}"
               test -f site/dists/stable/Release
