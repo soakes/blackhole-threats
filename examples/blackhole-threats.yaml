@@ -1,0 +1,22 @@
+# Reference configuration for blackhole-threats.
+#
+# Copy this file to your preferred runtime location and adjust the values for
+# your network before starting the service.
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.0.2.1"
+  neighbors:
+    - config:
+        neighboraddress: "192.0.2.2"
+        peeras: 64512
+
+# Each feed consists of a URL and optional community.
+#
+# The community is defined as "<as>:<action>" and each part may be in
+# the range of 0-65535. If a community is not defined then it will default
+# to "<global as>:666".
+feeds:
+#  - url: http://localhost/drop.txt
+#    community: 64512:666

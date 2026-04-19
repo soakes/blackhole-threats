@@ -1,0 +1,14 @@
+.DS_Store
+._*
+*.swp
+
+/blackhole-threats.yaml
+/blackhole-threats
+
+/.vscode/
+/.cache/
+**/.cache/
+/.tmp-config/
+**/.tmp-config/
+/dist/
+/_build/
