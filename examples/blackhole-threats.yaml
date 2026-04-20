@@ -1,0 +1,63 @@
+# Reference configuration using RFC 5737 / RFC 3849 documentation addresses.
+# Replace the local ASN, router ID, neighbors, and feed set to match your
+# network before deployment.
+gobgp:
+  global:
+    config:
+      as: 64520
+      routerid: "198.51.100.10"
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64520
+    - config:
+        neighboraddress: "198.51.100.2"
+        peeras: 64520
+    - config:
+        neighboraddress: "203.0.113.1"
+        peeras: 64520
+    - config:
+        neighboraddress: "203.0.113.2"
+        peeras: 64520
+    - config:
+        neighboraddress: "192.0.2.1"
+        peeras: 64520
+    - config:
+        neighboraddress: "2001:db8:10::1"
+        peeras: 64520
+    - config:
+        neighboraddress: "2001:db8:10::2"
+        peeras: 64520
+    - config:
+        neighboraddress: "2001:db8:20::1"
+        peeras: 64520
+    - config:
+        neighboraddress: "2001:db8:20::2"
+        peeras: 64520
+    - config:
+        neighboraddress: "2001:db8:30::1"
+        peeras: 64520
+
+feeds:
+  - url: http://localhost:41412/security/blocklist
+    community: 64520:1100
+  - url: https://team-cymru.org/Services/Bogons/fullbogons-ipv4.txt
+    community: 64520:1101
+  - url: https://team-cymru.org/Services/Bogons/fullbogons-ipv6.txt
+    community: 64520:1101
+  - url: https://www.spamhaus.org/drop/drop_v4.json
+    community: 64520:1102
+  - url: https://www.spamhaus.org/drop/drop_v6.json
+    community: 64520:1103
+  - url: https://lists.blocklist.de/lists/all.txt
+    community: 64520:1104
+  - url: https://www.dan.me.uk/torlist/?full
+    community: 64520:1105
+  - url: https://sslbl.abuse.ch/blacklist/sslipblacklist.txt
+    community: 64520:1106
+  - url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
+    community: 64520:1107
+  - url: https://home.nuug.no/~peter/bsdly.net.traplist
+    community: 64520:1108
+  - url: https://abuseipdb.tmiland.com/abuseipdb.txt
+    community: 64520:1109
