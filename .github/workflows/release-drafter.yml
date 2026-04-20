@@ -35,8 +35,12 @@ jobs:
       - name: Checkout repository defaults
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
           ref: ${{ github.event.repository.default_branch }}
+
+      - name: Fetch tags
+        run: git fetch --tags --force
 
       - name: Sync repository labels
         uses: actions/github-script@v9
@@ -92,7 +96,7 @@ jobs:
             echo "${key}=${value}" >> "${GITHUB_OUTPUT}"
           done < <(bash scripts/next-release.sh)
 
-      - name: Delete stale empty draft release
+      - name: Delete stale automated draft release
         if: github.event_name != 'pull_request_target' && steps.release_gate.outputs.release_required != 'true'
         uses: actions/github-script@v9
         with:
@@ -112,12 +116,11 @@ jobs:
               return release.draft &&
                 /^v\d+\.\d+\.\d+$/.test(tagName) &&
                 (target === defaultBranch || target === `refs/heads/${defaultBranch}`) &&
-                body.includes('## Included Changes') &&
-                body.includes('No changes')
+                body.includes('## Included Changes')
             })
 
             if (staleDrafts.length === 0) {
-              core.notice('No stale empty release drafts found.')
+              core.notice('No stale automated release drafts found.')
               return
             }
 
@@ -127,7 +130,7 @@ jobs:
                 repo: context.repo.repo,
                 release_id: release.id,
               })
-              core.notice(`Deleted stale empty draft release ${release.tag_name} (#${release.id}).`)
+              core.notice(`Deleted stale automated draft release ${release.tag_name} (#${release.id}).`)
             }
 
       - name: Update draft release

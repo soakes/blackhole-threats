@@ -162,15 +162,25 @@ sudo cat /etc/default/blackhole-threats
 Current behavior:
 
 - the release gate should prevent new drafts when no release-bearing commits are queued
-- stale empty automated drafts are deleted by the Release Drafter workflow
+- stale automated drafts are deleted by the Release Drafter workflow
 
 If you still see an empty draft:
 
 - confirm the latest `Release Drafter` workflow run succeeded
+- confirm the workflow checked the current repository tags before evaluating
+  `scripts/next-release.sh`
 - inspect whether the commit history since the last stable tag contains only
   non-release-bearing commit types
 - confirm the stale draft body matches the automated empty-draft pattern rather
   than a maintainer-created draft
+
+If you still see a non-empty automated draft even though only non-release-
+bearing commits landed:
+
+- confirm the latest `Release Drafter` workflow fetched tags before running the
+  release gate
+- confirm the draft body matches the automated `## Included Changes` template
+  rather than a maintainer-created draft
 
 If you see a non-empty draft for a tag that should already be published:
 

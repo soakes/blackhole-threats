@@ -73,7 +73,7 @@ Purpose:
 
 - apply release-note labels on pull requests
 - maintain a curated draft release for queued release-bearing work
-- remove stale empty automated drafts when no release-bearing changes remain
+- remove stale automated drafts when no release-bearing changes remain
 
 This keeps the GitHub Releases page aligned with the actual release gate.
 
