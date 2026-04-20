@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
 
       - name: Sync repository labels
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs')
@@ -94,7 +94,7 @@ jobs:
 
       - name: Delete stale empty draft release
         if: github.event_name != 'pull_request_target' && steps.release_gate.outputs.release_required != 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const defaultBranch = context.payload.repository.default_branch
