@@ -1,0 +1,24 @@
+[Unit]
+Description=Blackhole threats BGP daemon
+Documentation=man:blackhole-threats(8)
+Documentation=https://github.com/soakes/blackhole-threats
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/blackhole-threats
+ExecStart=/usr/sbin/blackhole-threats -conf $CONF $EXTRA_OPTS
+ExecReload=/bin/kill -USR1 $MAINPID
+SyslogIdentifier=blackhole-threats
+StandardOutput=journal
+StandardError=journal
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

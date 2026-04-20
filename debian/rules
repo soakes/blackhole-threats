@@ -1,0 +1,52 @@
+#!/usr/bin/make -f
+
+PACKAGE   := $(shell dh_listpackages)
+TMP       := $(CURDIR)/debian/$(PACKAGE)
+BUILD_DIR := $(CURDIR)/_build
+UPSTREAM_VERSION := $(shell dpkg-parsechangelog -SVersion | sed 's/-[^-]*$$//')
+BUILD_DATE := $(shell if [ -n "$$SOURCE_DATE_EPOCH" ]; then date -u -d "@$$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ; else date -u +%Y-%m-%dT%H:%M:%SZ; fi)
+
+export GO111MODULE             := on
+export GOCACHE                 := $(BUILD_DIR)/.cache/go-build
+export GOMODCACHE              := $(BUILD_DIR)/.cache/go-mod
+export GOFLAGS                 ?= -trimpath
+export BLACKHOLE_LDFLAGS       ?= -X github.com/soakes/blackhole-threats/internal/buildinfo.Version=$(UPSTREAM_VERSION) -X github.com/soakes/blackhole-threats/internal/buildinfo.Commit=debian -X github.com/soakes/blackhole-threats/internal/buildinfo.BuildDate=$(BUILD_DATE)
+
+ifeq ($(DEB_HOST_ARCH), amd64)
+	GOARCH := amd64
+else ifeq ($(DEB_HOST_ARCH), arm64)
+	GOARCH := arm64
+else ifeq ($(DEB_HOST_ARCH), armhf)
+	GOARCH := arm
+endif
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	mkdir -p $(BUILD_DIR)
+	GOARCH=$(GOARCH) CGO_ENABLED=0 \
+		go build $(GOFLAGS) \
+			-ldflags "$(BLACKHOLE_LDFLAGS)" \
+			-o $(BUILD_DIR)/blackhole-threats \
+			./cmd/blackhole-threats
+
+override_dh_auto_clean:
+	[ -d $(BUILD_DIR) ] && chmod -R u+w $(BUILD_DIR) || true
+	rm -rf $(BUILD_DIR)
+
+override_dh_auto_install:
+	install -d $(TMP)/usr/sbin
+	install -m 0755 $(BUILD_DIR)/blackhole-threats $(TMP)/usr/sbin/blackhole-threats
+	install -d $(TMP)/etc
+	install -m 0644 examples/blackhole-threats.yaml $(TMP)/etc/blackhole-threats.yaml
+
+override_dh_auto_test:
+ifneq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),nocheck)
+	go test ./...
+endif
+
+override_dh_dwz:
+	# Go builds already strip debug data via linker flags; dh_dwz has nothing useful to do here.
+
+override_dh_shlibdeps:
