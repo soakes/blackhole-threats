@@ -27,6 +27,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ inputs.prerelease_tag }}
 
       - name: Fetch tags
         run: git fetch --tags --force
