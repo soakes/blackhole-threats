@@ -84,7 +84,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine whether a release draft is needed
+        if: github.event_name != 'pull_request_target'
+        id: release_gate
+        run: |
+          while IFS='=' read -r key value; do
+            echo "${key}=${value}" >> "${GITHUB_OUTPUT}"
+          done < <(bash scripts/next-release.sh)
+
       - name: Update draft release
+        if: github.event_name != 'pull_request_target' && steps.release_gate.outputs.release_required == 'true'
         uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
