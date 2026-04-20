@@ -35,6 +35,10 @@ categories:
     labels:
       - maintenance
 version-resolver:
+  # Documentation, CI, and maintenance labels can still appear in grouped
+  # release notes when they ship alongside release-bearing work, but they
+  # should not bump the version on their own. `scripts/next-release.sh` is the
+  # gating source of truth for whether a new draft or tag should exist at all.
   major:
     labels:
       - breaking
@@ -47,8 +51,6 @@ version-resolver:
       - dependencies
       - container
       - packaging
-      - ci
-      - maintenance
       - security
       - release
   default: patch
