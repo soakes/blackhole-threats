@@ -86,9 +86,11 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=${RELEASE_REF:-dev}" >> "$GITHUB_OUTPUT"
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          {
+            echo "version=${RELEASE_REF:-dev}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build release binary
         run: |
@@ -139,9 +141,11 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=${RELEASE_REF:-dev}" >> "$GITHUB_OUTPUT"
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          {
+            echo "version=${RELEASE_REF:-dev}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build Debian package in Debian trixie
         run: |
@@ -302,10 +306,12 @@ jobs:
             exit 1
           fi
 
-          echo "prerelease=${prerelease}" >> "${GITHUB_OUTPUT}"
-          echo "stable_tag=${stable_tag}" >> "${GITHUB_OUTPUT}"
-          echo "previous_tag=${previous_tag}" >> "${GITHUB_OUTPUT}"
-          echo "release_sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+          {
+            echo "prerelease=${prerelease}"
+            echo "stable_tag=${stable_tag}"
+            echo "previous_tag=${previous_tag}"
+            echo "release_sha=$(git rev-parse HEAD)"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -392,21 +398,21 @@ jobs:
           fi
 
           write_release_overview() {
-            printf '## Release Overview\n\n'
-            printf '%s for `%s`.\n\n' "${release_label}" "${release_target}"
-            printf -- '- Published tag: [`%s`](https://github.com/%s/releases/tag/%s)\n' \
+            printf "## Release Overview\n\n"
+            printf "%s for \`%s\`.\n\n" "${release_label}" "${release_target}"
+            printf -- "- Published tag: [\`%s\`](https://github.com/%s/releases/tag/%s)\n" \
               "${release_ref}" \
               "${GITHUB_REPOSITORY}" \
               "${release_ref}"
             if [ -n "${previous_tag}" ]; then
-              printf -- '- Full diff: [`%s...%s`](https://github.com/%s/compare/%s...%s)\n' \
+              printf -- "- Full diff: [\`%s...%s\`](https://github.com/%s/compare/%s...%s)\n" \
                 "${previous_tag}" \
                 "${release_ref}" \
                 "${GITHUB_REPOSITORY}" \
                 "${previous_tag}" \
                 "${release_ref}"
             fi
-            printf '\n'
+            printf "\n"
           }
 
           if [ -n "${release_body}" ]; then
@@ -434,29 +440,22 @@ jobs:
 
       - name: Publish release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_GH_TOKEN: ${{ github.token }}
         run: |
-          release_ref="${RELEASE_REF}"
-          prerelease_args=()
-          final_release_args=(--draft=false --latest)
-          if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
-            prerelease_args=(--prerelease)
-            final_release_args=(--draft=false --prerelease)
-          fi
+          set -euo pipefail
 
-          if gh release view "${release_ref}" >/dev/null 2>&1; then
-            gh release edit "${release_ref}" \
-              --title "${release_ref}" \
-              --notes-file release/release-notes.md \
-              --draft \
-              "${prerelease_args[@]}"
-          else
-            gh release create "${release_ref}" \
-              --title "${release_ref}" \
-              --notes-file release/release-notes.md \
-              --verify-tag \
-              --draft \
-              "${prerelease_args[@]}"
+          export GH_TOKEN="${DEFAULT_GH_TOKEN}"
+          release_ref="${RELEASE_REF}"
+
+          orphan_draft_ids="$(
+            gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+              --jq ".[] | select(.draft == true and .tag_name == \"${release_ref}\" and (.html_url | contains(\"/releases/tag/untagged-\"))) | .id" || true
+          )"
+          if [ -n "${orphan_draft_ids}" ]; then
+            while IFS= read -r release_id; do
+              [ -n "${release_id}" ] || continue
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${release_id}"
+            done <<< "${orphan_draft_ids}"
           fi
 
           mapfile -t assets < <(find release/assets -maxdepth 1 -type f | sort)
@@ -465,5 +464,32 @@ jobs:
             exit 1
           fi
 
-          gh release upload "${release_ref}" --clobber "${assets[@]}"
-          gh release edit "${release_ref}" "${final_release_args[@]}"
+          if gh release view "${release_ref}" >/dev/null 2>&1; then
+            gh release upload "${release_ref}" --clobber "${assets[@]}"
+
+            edit_args=(
+              --title "${release_ref}"
+              --notes-file release/release-notes.md
+            )
+            if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
+              edit_args+=(--prerelease)
+            else
+              edit_args+=(--latest)
+            fi
+
+            gh release edit "${release_ref}" "${edit_args[@]}"
+            exit 0
+          fi
+
+          create_args=(
+            --title "${release_ref}"
+            --notes-file release/release-notes.md
+            --verify-tag
+          )
+          if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
+            create_args+=(--prerelease)
+          else
+            create_args+=(--latest)
+          fi
+
+          gh release create "${release_ref}" "${assets[@]}" "${create_args[@]}"

@@ -223,6 +223,11 @@ automation.
   need to merge automatically, the supported exception is an optional
   `DEPENDABOT_AUTOMERGE_TOKEN` with the minimum extra workflow permission needed
   for that class of PR.
+- Prefer the repo-scoped `GITHUB_TOKEN` for automated release tagging under the
+  current repository settings. If release-bearing commits that modify
+  `.github/workflows/` also need to auto-promote from RC to stable, the
+  supported exception is an optional `RELEASE_AUTOMATION_TOKEN` with the
+  minimum extra workflow permission needed for those tag pushes.
 - If you change workflow behavior, update the README CI/CD, APT repository, or
   contribution sections in the same change when operator behavior changes.
 

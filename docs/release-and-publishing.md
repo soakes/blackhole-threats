@@ -186,6 +186,13 @@ Current behavior:
   optional `DEPENDABOT_AUTOMERGE_TOKEN` can be added if workflow-file
   Dependabot PRs also need to merge automatically under GitHub's stricter
   workflow-permission rules
+- the release workflows publish directly to the tagged GitHub Release rather
+  than creating a temporary draft shell, and they clean up stale orphan
+  `untagged-*` drafts for the same tag before publishing
+- the repo-scoped `GITHUB_TOKEN` is also the default release-tag credential,
+  and an optional `RELEASE_AUTOMATION_TOKEN` can be added if release-bearing
+  commits under `.github/workflows/` need the extra workflow permission that
+  GitHub requires for automated tag pushes
 
 Operationally, this means passing dependency updates can flow all the way from
 PR to RC to stable publication without manual intervention.
@@ -208,6 +215,9 @@ Key constraints:
 Automation is the default, but a maintainer still steps in when:
 
 - `Build and Validate` fails on `main`
+- a release-bearing commit updates `.github/workflows/` and
+  `RELEASE_AUTOMATION_TOKEN` is not configured, so GitHub blocks the automated
+  RC or stable tag push
 - prerelease asset publication fails
 - container publication fails
 - APT signing or Pages publication fails

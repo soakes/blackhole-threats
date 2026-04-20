@@ -200,6 +200,19 @@ Checks:
 
 If the PR is red, that is the intended stopping point for the automation path.
 
+## Release Page Shows Both A Draft And A Published Release For The Same Tag
+
+Checks:
+
+- confirm the published tagged release succeeded in `Release Assets`
+- look for a stale orphan draft whose URL ends with `untagged-*` but whose
+  `tag_name` still matches the real release tag
+- delete only the orphan draft release object by ID; do not delete the real
+  published release for the same tag
+- update to the current `Release Assets` workflow if the release was created by
+  older automation, because the current flow publishes directly to the tagged
+  release and removes stale orphan drafts before publishing
+
 ## Signed APT Repository Did Not Update
 
 Checks:
@@ -211,6 +224,10 @@ Checks:
 - if the original stable-tag run used stale workflow logic, dispatch `Publish
   Signed Debian Repository` from the current default branch with
   `release_ref=<stable-tag>`
+- if the release-bearing commit changed `.github/workflows/`, confirm the
+  optional `RELEASE_AUTOMATION_TOKEN` secret exists with repository contents
+  and workflows write access; the default `GITHUB_TOKEN` can be blocked from
+  pushing the stable tag in that case
 
 Useful things to verify in the published site:
 

@@ -672,11 +672,11 @@ refresh for this repository.
 - `Dependabot Auto Merge`
   - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges green Dependabot PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
 - `Promote Release Candidate`
-  - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention
+  - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention, while honoring the optional `RELEASE_AUTOMATION_TOKEN` escape hatch for workflow-touching release commits
 - `Release Drafter`
   - keeps a curated draft release updated on `main` when there is at least one release-bearing change queued, removes stale empty automated drafts when there are no release-bearing changes left, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
 - `Release Assets`
-  - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, uses an existing draft body when one already exists for the tag, and supports recovery dispatches from the current default branch with `release_ref=<tag>`
+  - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, uses an existing draft body when one already exists for the tag, cleans up stale orphan `untagged-*` drafts before publishing, and supports recovery dispatches from the current default branch with `release_ref=<tag>`
 - `Publish Signed Debian Repository`
   - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Astro-based landing site, signs the repository, deploys both to GitHub Pages for stable `v*` tags, and supports recovery dispatches from the current default branch with `release_ref=<stable-tag>`
 - `Deploy Pages Site`
@@ -718,6 +718,10 @@ refresh for this repository.
 - the Dependabot merge workflow uses the repo-scoped `GITHUB_TOKEN` by default
   and only needs an optional `DEPENDABOT_AUTOMERGE_TOKEN` when GitHub policy
   blocks workflow-file pull requests from being merged by the default token
+- the release workflows use the repo-scoped `GITHUB_TOKEN` by default and only
+  need an optional `RELEASE_AUTOMATION_TOKEN` when a release-bearing commit
+  updates files under `.github/workflows/` and GitHub blocks the tag push
+  without extra workflow permission
 - docs-only, README-only, website-only, and Pages-only changes are
   non-release-bearing by default; they can refresh the public site from `main`,
   but they should not create or advance a release draft, RC tag, or stable tag

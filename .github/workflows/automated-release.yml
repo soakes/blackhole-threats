@@ -81,12 +81,22 @@ jobs:
       - name: Create and push prerelease tag
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_GH_TOKEN: ${{ github.token }}
+          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
         run: |
+          set -euo pipefail
+
+          push_token="${RELEASE_AUTOMATION_TOKEN:-${DEFAULT_GH_TOKEN}}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "${{ steps.candidate.outputs.candidate_tag }}" -m "Release candidate ${{ steps.candidate.outputs.candidate_tag }}"
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.candidate_tag }}"
+          if ! git push "https://x-access-token:${push_token}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.candidate_tag }}" 2>push.err; then
+            cat push.err >&2
+            if grep -Fq "without 'workflows' permission" push.err && [ -z "${RELEASE_AUTOMATION_TOKEN:-}" ]; then
+              echo "Add a RELEASE_AUTOMATION_TOKEN secret with repository contents and workflows write access to automate release tags for commits that update workflow files." >&2
+            fi
+            exit 1
+          fi
 
       - name: Dispatch prerelease publish workflows
         id: prerelease_dispatch
@@ -116,12 +126,22 @@ jobs:
       - name: Create and push stable tag
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_GH_TOKEN: ${{ github.token }}
+          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
         run: |
+          set -euo pipefail
+
+          push_token="${RELEASE_AUTOMATION_TOKEN:-${DEFAULT_GH_TOKEN}}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "${{ steps.candidate.outputs.stable_tag }}" -m "Release ${{ steps.candidate.outputs.stable_tag }}"
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.stable_tag }}"
+          if ! git push "https://x-access-token:${push_token}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.stable_tag }}" 2>push.err; then
+            cat push.err >&2
+            if grep -Fq "without 'workflows' permission" push.err && [ -z "${RELEASE_AUTOMATION_TOKEN:-}" ]; then
+              echo "Add a RELEASE_AUTOMATION_TOKEN secret with repository contents and workflows write access to automate release tags for commits that update workflow files." >&2
+            fi
+            exit 1
+          fi
 
       - name: Dispatch stable publish workflows
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
