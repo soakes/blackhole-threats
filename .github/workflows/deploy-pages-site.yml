@@ -58,9 +58,13 @@ jobs:
             --json databaseId,headBranch,headSha,createdAt)"
 
           run_id="$(printf '%s' "${run_json}" | jq -r '.[0].databaseId // empty')"
-          stable_tag="$(printf '%s' "${run_json}" | jq -r '.[0].headBranch // empty')"
-          stable_sha="$(printf '%s' "${run_json}" | jq -r '.[0].headSha // empty')"
-          stable_build_date="$(printf '%s' "${run_json}" | jq -r '.[0].createdAt // empty')"
+          stable_tag="$(
+            git for-each-ref --sort=-v:refname --format='%(refname:short)' refs/tags/v* \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -n1 || true
+          )"
+          stable_sha="$(git rev-list -n1 "${stable_tag}")"
+          stable_build_date="$(gh release view "${stable_tag}" --json publishedAt --jq .publishedAt)"
 
           test -n "${run_id}"
           test -n "${stable_tag}"
