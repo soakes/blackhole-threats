@@ -12,3 +12,6 @@
 **/.tmp-config/
 /dist/
 /_build/
+/website/.astro/
+/website/dist/
+/website/node_modules/

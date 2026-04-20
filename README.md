@@ -580,6 +580,9 @@ sudo journalctl -u blackhole-threats -f
 
 Automated `v*` releases from `main` publish a signed APT repository through
 GitHub Pages.
+The Pages root also serves as the public product landing page, while the APT
+indexes, package pool, and signing files stay available under the same base
+URL for machine consumption.
 
 Repository base URL:
 
@@ -631,6 +634,11 @@ sudo apt install blackhole-threats
 - The full archive key fingerprint is published alongside the repository for
   out-of-band verification
 - Packages are hosted through GitHub Pages rather than the GitHub Releases asset listing
+- The landing page at the repository root is built from `website/` and deployed
+  together with the signed package indexes
+- Website-only changes can refresh the Pages landing site from `main` without
+  cutting a new release; that deploy path reuses the latest published
+  repository snapshot so the signed APT content remains intact
 - Tagged GitHub Releases attach the installable binaries, runtime Debian
   packages, `sha256sums.txt`, and the Debian source package trio for offline
   retrieval and inspection; maintainer-only artifacts such as `-dbgsym`,
@@ -665,7 +673,9 @@ refresh for this repository.
 - `Release Assets`
   - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, and uses Release Drafter output with a concise commit-history fallback for direct-to-`main` changes
 - `Publish Signed Debian Repository`
-  - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, signs the repository, and deploys it to GitHub Pages for stable `v*` tags only
+  - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Astro-based landing site, signs the repository, and deploys both to GitHub Pages for stable `v*` tags only
+- `Deploy Pages Site`
+  - rebuilds the Astro landing site on `main`, overlays it onto the latest published Pages snapshot, and republishes the combined result without requiring a new release tag
 - `Refresh Build and Runtime Pins`
   - refreshes the pinned Docker Go build image version and updates the pinned Docker `s6-overlay` version and checksum pins
 
@@ -682,6 +692,9 @@ refresh for this repository.
 - `main` is treated as release-candidate-ready: each merge to `main` can become
   the next automated `v*-rc.*` tag, but stable `latest` publication only
   happens after the prerelease publish path passes
+- `main` pushes also refresh the public GitHub Pages landing site, but they do
+  so by overlaying the website onto the latest published repository snapshot
+  rather than by rebuilding or resigning the APT repo
 - automated version bumps use `feat` for minor releases, `fix`/`perf`/`revert`/
   `container`/`build`/`deps`/`packaging` for patch releases, and
   `BREAKING CHANGE:` or `type!:` for major releases
@@ -713,6 +726,7 @@ blackhole-threats/
 │       ├── automated-release.yml
 │       ├── build-and-validate.yml
 │       ├── container-image.yml
+│       ├── deploy-pages-site.yml
 │       ├── promote-release.yml
 │       ├── publish-apt-repository.yml
 │       ├── refresh-toolchain-and-runtime.yml
@@ -735,6 +749,8 @@ blackhole-threats/
 │   └── container/
 ├── scripts/
 │   └── build-apt-repository.sh
+├── website/
+│   └── src/
 ├── Dockerfile
 ├── Makefile
 ├── go.mod
@@ -755,6 +771,8 @@ blackhole-threats/
   - container rootfs and S6 service definitions
 - `debian`
   - Debian packaging metadata
+- `website`
+  - Astro source for the GitHub Pages landing site that fronts the signed APT repository
 
 ---
 

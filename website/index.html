@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Blackhole Threats - Go-based RTBH daemon with first-party Debian, container, and signed APT distribution." />
+    <meta name="theme-color" content="#030712" />
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <title>Blackhole Threats | RTBH Route Automation</title>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <!-- Background glows -->
+    <div class="glow-bg glow-bg-primary"></div>
+    <div class="glow-bg glow-bg-secondary"></div>
+
+    <header class="masthead wrapper flex j-between a-center fade-in">
+      <a class="brand" href="#" id="site-url-link">
+        <div class="brand-mark">BT</div>
+        <div class="brand-copy">
+          <strong>Blackhole Threats</strong>
+          <small>RTBH route automation</small>
+        </div>
+      </a>
+
+      <nav class="masthead-links hide-mobile">
+        <a href="https://github.com/soakes/blackhole-threats/releases" class="nav-link">Releases</a>
+        <a href="https://ghcr.io/soakes/blackhole-threats" class="nav-link">GHCR</a>
+        <a href="#" class="nav-link" id="nav-apt-link">APT</a>
+        <a href="https://github.com/soakes/blackhole-threats#readme" class="nav-link">README</a>
+        <a href="https://github.com/soakes/blackhole-threats" class="nav-link icon-link">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section class="hero wrapper fade-in" style="animation-delay: 0.1s;">
+        <div class="hero-content">
+          <div class="hero-chip"><span>Cybersecurity Infrastructure</span></div>
+          <h1 class="hero-title">Protect networks with<br><span class="text-gradient">automated RTBH filtering</span></h1>
+          <p class="hero-lead">
+            Ingest local or remote threat feeds, compute route deltas, and publish controlled BGP blackhole announcements. First-party Debian packages, GHCR images, and a public APT repository.
+          </p>
+          <div class="hero-actions">
+            <a href="#install" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/soakes/blackhole-threats/blob/main/docs/architecture.md" class="btn btn-secondary">Architecture</a>
+          </div>
+        </div>
+        
+        <div class="hero-rail glass-card stagger-in">
+          <h3 class="rail-title">Live Build Metadata</h3>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Latest stable</span>
+              <span class="meta-value text-gradient-alt" id="ui-version">Loading...</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Release commit</span>
+              <span class="meta-value font-mono" id="ui-commit">---</span>
+            </div>
+          </div>
+          <div class="meta-block">
+            <span class="meta-label">Published UTC</span>
+            <span class="meta-value text-sm" id="ui-date">---</span>
+          </div>
+          <div class="meta-block">
+            <span class="meta-label">Archive key fingerprint</span>
+            <span class="meta-value font-mono text-xs text-muted" id="ui-fingerprint">---</span>
+          </div>
+          <hr class="dim-divider">
+          <ul class="bullet-list">
+            <li>Fetch feeds concurrently & normalize IPs</li>
+            <li>Summarise networks to communities</li>
+            <li>Export concise BGP route deltas</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Highlights Section -->
+      <section class="highlights wrapper stagger-in">
+        <div class="glass-card flex-row">
+          <div class="highlight-item">
+            <span class="h-label">Purpose</span>
+            <strong>RTBH automation</strong>
+            <p>Normalize threat feeds into controlled BGP state.</p>
+          </div>
+          <div class="highlight-item">
+            <span class="h-label">Distribution</span>
+            <strong>APT, GHCR, source</strong>
+            <p>One core service, several operator-ready paths.</p>
+          </div>
+          <div class="highlight-item">
+            <span class="h-label">Trust</span>
+            <strong>Signed Debian repo</strong>
+            <p>Public key and fingerprint shipped reliably.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Install Section -->
+      <section id="install" class="install-section wrapper fade-in">
+        <div class="section-heading">
+          <p class="eyebrow">Deploy Seamlessly</p>
+          <h2>Pick your delivery path.</h2>
+        </div>
+
+        <div class="grid-layout">
+          <div class="install-card glass-card hover-lift">
+            <div class="card-head flex j-between a-center">
+              <h3>Signed APT (Recommended)</h3>
+              <span class="badge primary-badge">Debian</span>
+            </div>
+            <p class="card-desc">The cleanest production path for apt-secure verification and updates.</p>
+            <div class="code-block" id="apt-code-container">
+<!-- Wait to populate via JS for dynamic site URL -->
+<pre><code>sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://soakes.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg \
+| sudo tee /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg >/dev/null
+
+sudo tee /etc/apt/sources.list.d/blackhole-threats.sources >/dev/null &lt;&lt;'EOF'
+Types: deb deb-src
+URIs: https://soakes.github.io/blackhole-threats/
+Suites: stable
+Components: main
+Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg
+EOF
+
+sudo apt update && sudo apt install blackhole-threats</code></pre>
+            </div>
+          </div>
+
+          <div class="install-card glass-card hover-lift">
+            <div class="card-head flex j-between a-center">
+              <h3>GHCR runtime</h3>
+              <span class="badge secondary-badge">Container</span>
+            </div>
+            <p class="card-desc">Use the published multi-arch image anywhere Docker runs.</p>
+            <div class="code-block">
+<pre><code>docker pull ghcr.io/soakes/blackhole-threats:latest
+
+docker run --rm -p 179:179 \
+  -v "$PWD/config.yaml:/config/blackhole-threats.yaml:ro" \
+  ghcr.io/soakes/blackhole-threats:latest</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Callout -->
+      <section class="cta wrapper fade-in">
+        <div class="glass-card cta-card text-center relative overflow-hidden">
+          <div class="cta-bg-glow"></div>
+          <h2 class="cta-title">Ready to secure your routing?</h2>
+          <p class="cta-desc">Read the comprehensive operator manual for deeply customized feeds, peering configurations, and management tools.</p>
+          <a href="https://github.com/soakes/blackhole-threats#readme" class="btn btn-primary large-btn">Open Documentation</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer wrapper text-center relative z-10 fade-in">
+      <hr class="dim-divider">
+      <p><strong>Blackhole Threats</strong> | A Go-based RTBH daemon turning threat feeds into BGP announcements.</p>
+      <p class="text-sm text-muted">Published from commit <span id="footer-commit" class="font-mono">---</span> for release <span id="footer-version">---</span></p>
+    </footer>
+
+  </body>
+</html>

@@ -1,0 +1,148 @@
+name: Deploy Pages Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-pages-site
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Pages Site
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      pages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Restore durable repository snapshot branch
+        id: snapshot_branch
+        uses: actions/checkout@v6
+        continue-on-error: true
+        with:
+          path: published-site
+          persist-credentials: false
+          ref: pages-snapshot
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Resolve latest published repository snapshot fallback
+        id: published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_json="$(gh run list \
+            --workflow publish-apt-repository.yml \
+            --status success \
+            --limit 1 \
+            --json databaseId,headBranch,headSha,createdAt)"
+
+          run_id="$(printf '%s' "${run_json}" | jq -r '.[0].databaseId // empty')"
+          stable_tag="$(printf '%s' "${run_json}" | jq -r '.[0].headBranch // empty')"
+          stable_sha="$(printf '%s' "${run_json}" | jq -r '.[0].headSha // empty')"
+          stable_build_date="$(printf '%s' "${run_json}" | jq -r '.[0].createdAt // empty')"
+
+          test -n "${run_id}"
+          test -n "${stable_tag}"
+          test -n "${stable_sha}"
+          test -n "${stable_build_date}"
+
+          echo "run_id=${run_id}" >> "$GITHUB_OUTPUT"
+          echo "stable_tag=${stable_tag}" >> "$GITHUB_OUTPUT"
+          echo "stable_sha=${stable_sha}" >> "$GITHUB_OUTPUT"
+          echo "stable_build_date=${stable_build_date}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore latest published repository snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf pages-artifact site
+          mkdir -p site
+
+          if [ "${{ steps.snapshot_branch.outcome }}" = "success" ]; then
+            rsync -a --delete --exclude '.git' published-site/ site/
+          else
+            mkdir -p pages-artifact
+            gh run download "${{ steps.published.outputs.run_id }}" -n github-pages -D pages-artifact
+            tar -xf pages-artifact/artifact.tar -C site
+          fi
+
+          test -f site/dists/stable/InRelease
+          test -f site/blackhole-threats-archive-keyring.gpg
+          test -f site/blackhole-threats-archive-keyring.fingerprint.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Build landing site
+        run: |
+          npm ci --prefix website
+          fingerprint="$(tr '\n' ' ' < site/blackhole-threats-archive-keyring.fingerprint.txt | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')"
+          make website-build \
+            SITE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ \
+            SITE_RELEASE_VERSION="${{ steps.published.outputs.stable_tag }}" \
+            SITE_COMMIT="${{ steps.published.outputs.stable_sha }}" \
+            SITE_BUILD_DATE="${{ steps.published.outputs.stable_build_date }}" \
+            SITE_APT_FINGERPRINT="${fingerprint}"
+          cp -a website/dist/. site/
+          test -f site/index.html
+          test -f site/dists/stable/InRelease
+
+      - name: Publish durable Pages snapshot branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          snapshot_root="$(mktemp -d)"
+          trap 'rm -rf "${snapshot_root}"' EXIT
+          git init -q "${snapshot_root}"
+          cd "${snapshot_root}"
+          git checkout --orphan pages-snapshot
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp -a "${GITHUB_WORKSPACE}/site/." .
+          git add --all
+          git commit -m "pages: snapshot ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin HEAD:pages-snapshot
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    name: Deploy Pages Site
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

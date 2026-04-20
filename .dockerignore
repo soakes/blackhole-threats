@@ -18,3 +18,6 @@ scripts
 *.swp
 .DS_Store
 ._*
+website/.astro/
+website/dist/
+website/node_modules/

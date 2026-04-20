@@ -38,7 +38,7 @@ jobs:
       - verify-release-tag
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pages: write
     environment:
       name: apt-repository
@@ -184,43 +184,40 @@ jobs:
             apt-get "${apt_args[@]}" source blackhole-threats
           )
 
-      - name: Write repository landing page
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Build GitHub Pages landing site
         run: |
-          cat > site/index.html <<EOF
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>blackhole-threats Debian Repository</title>
-            <style>
-              body { font-family: sans-serif; max-width: 48rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.6; }
-              code, pre { background: #f5f5f5; border-radius: 0.35rem; }
-              code { padding: 0.15rem 0.35rem; }
-              pre { padding: 1rem; overflow-x: auto; }
-            </style>
-          </head>
-          <body>
-            <h1>blackhole-threats Debian Repository</h1>
-            <p>This GitHub Pages site publishes the signed APT repository for blackhole-threats.</p>
-            <p>Repository URL:</p>
-            <pre><code>${{ steps.meta.outputs.site_url }}</code></pre>
-            <p>Archive key:</p>
-            <pre><code>${{ steps.meta.outputs.site_url }}blackhole-threats-archive-keyring.gpg</code></pre>
-            <p>Archive key fingerprint:</p>
-            <pre><code>${{ steps.signing.outputs.pretty_fingerprint }}</code></pre>
-            <p>Fingerprint file:</p>
-            <pre><code>${{ steps.meta.outputs.site_url }}blackhole-threats-archive-keyring.fingerprint.txt</code></pre>
-            <p>Add it to APT with:</p>
-            <pre><code>Types: deb deb-src
-            URIs: ${{ steps.meta.outputs.site_url }}
-            Suites: stable
-            Components: main
-            Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg</code></pre>
-            <p>The repository publishes both binary and source package indexes.</p>
-          </body>
-          </html>
-          EOF
+          npm ci --prefix website
+          make website-build \
+            SITE_URL=${{ steps.meta.outputs.site_url }} \
+            SITE_RELEASE_VERSION=${{ steps.meta.outputs.version }} \
+            SITE_COMMIT=${{ github.sha }} \
+            SITE_BUILD_DATE=${{ steps.meta.outputs.build_date }} \
+            SITE_APT_FINGERPRINT="${{ steps.signing.outputs.pretty_fingerprint }}"
+          cp -a website/dist/. site/
+
+      - name: Publish durable repository snapshot branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          snapshot_root="$(mktemp -d)"
+          trap 'rm -rf "${snapshot_root}"' EXIT
+          git init -q "${snapshot_root}"
+          cd "${snapshot_root}"
+          git checkout --orphan pages-snapshot
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp -a "${GITHUB_WORKSPACE}/site/." .
+          git add --all
+          git commit -m "pages: snapshot ${GITHUB_REF_NAME}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin HEAD:pages-snapshot
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

@@ -26,6 +26,9 @@ automation.
 - Keep Debian packaging metadata in `debian/`.
 - Keep release and repository automation scripts in `scripts/`.
 - Keep architecture and design notes in `docs/`.
+- Keep the GitHub Pages landing site in `website/`; treat it as the public
+  frontend for the signed APT repository rather than as a throwaway marketing
+  stub.
 - Retired files should be removed from the working tree rather than left behind
   as dead alternatives.
 
@@ -62,6 +65,10 @@ automation.
 - Build the Debian package locally:
   ```bash
   make package
+  ```
+- Build the GitHub Pages site locally after installing `website/` dependencies:
+  ```bash
+  make website-build
   ```
 - When editing the APT repository builder, at minimum syntax-check it:
   ```bash
@@ -138,6 +145,12 @@ automation.
   - `/usr/share/doc/blackhole-threats/examples/blackhole-threats.yaml`
 - The Debian package and the GitHub Pages APT repository are both first-party
   deliverables. Do not treat Debian packaging as secondary or optional.
+- The GitHub Pages root is both a human-facing landing site and the machine-
+  readable APT repository root. Keep the landing page compatible with static
+  hosting and do not break the `dists/`, `pool/`, or key download paths.
+- Website-only GitHub Pages refreshes from `main` should reuse the latest
+  published repository snapshot rather than forcing a new release tag or
+  rebuilding unsigned repository metadata.
 - `scripts/build-apt-repository.sh` is expected to keep publishing both binary
   and source package indexes. Do not regress `deb-src` support.
 - Keep Debian changelog entries factual, operator-facing, and suitable for an
@@ -175,6 +188,9 @@ automation.
   `v*-rc.*` tags.
 - Release publishing is limited to trusted `v*` / `v*-rc.*` tags.
 - Signed APT repository publishing is limited to trusted stable `v*` tags.
+- The separate landing-site Pages deploy may run from `main`, but it must only
+  republish the website on top of the latest published repository snapshot; do
+  not turn `main` pushes into unsigned APT repository rebuilds.
 - Release and publish tags must point to commits already contained in `main`;
   keep that verification in place.
 - Keep the scheduled toolchain/runtime refresh workflow branch-scoped and
@@ -203,6 +219,12 @@ automation.
   packaging, also run:
   ```bash
   make package
+  ```
+- If you change `website/` or GitHub Pages publishing behavior, also run:
+  ```bash
+  npm ci --prefix website
+  npm --prefix website run check
+  make website-build
   ```
 - If you change `scripts/build-apt-repository.sh`, also run:
   ```bash
@@ -244,6 +266,9 @@ automation.
   "push a release" without clarifying stability, interpret that as "create or
   verify the next prerelease"; treat stable promotion as a separate explicit
   operator action.
+- Website-only or CI-only landing-page updates should use the normal `main`
+  push path and the Pages-site deploy workflow; do not cut a release tag just
+  to refresh the public website.
 - Do not hand-push routine `v*` or `v*-rc.*` tags. Automated tagging from
   `main` is the normal path; manual promotion or manual tags should be reserved
   for explicit recovery or operator-directed exceptions.

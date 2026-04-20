@@ -6,12 +6,17 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || (dpkg-par
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || printf '%s' packaged)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 GOFLAGS ?= -trimpath
+SITE_URL ?= https://soakes.github.io/blackhole-threats/
+SITE_RELEASE_VERSION ?= $(VERSION)
+SITE_COMMIT ?= $(COMMIT)
+SITE_BUILD_DATE ?= $(BUILD_DATE)
+SITE_APT_FINGERPRINT ?= Published alongside stable release builds.
 LDFLAGS ?= -s -w \
 	-X $(PKG)/internal/buildinfo.Version=$(VERSION) \
 	-X $(PKG)/internal/buildinfo.Commit=$(COMMIT) \
 	-X $(PKG)/internal/buildinfo.BuildDate=$(BUILD_DATE)
 
-.PHONY: fmt fmt-check vet test build build-cross docker-build clean package
+.PHONY: fmt fmt-check vet test build build-cross docker-build website-build clean package
 
 test:
 	$(GO) test ./...
@@ -43,6 +48,14 @@ docker-build:
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
 		-t $(BINARY):dev \
 		.
+
+website-build:
+	PUBLIC_SITE_URL=$(SITE_URL) \
+	PUBLIC_RELEASE_VERSION=$(SITE_RELEASE_VERSION) \
+	PUBLIC_COMMIT=$(SITE_COMMIT) \
+	PUBLIC_BUILD_DATE=$(SITE_BUILD_DATE) \
+	PUBLIC_APT_FINGERPRINT='$(SITE_APT_FINGERPRINT)' \
+	npm --prefix website run build
 
 clean:
 	rm -rf _build dist
