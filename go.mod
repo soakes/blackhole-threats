@@ -1,6 +1,6 @@
 module github.com/soakes/blackhole-threats
 
-go 1.24
+go 1.25.0
 
 require (
 	github.com/golang/protobuf v1.5.4
@@ -30,7 +30,7 @@ require (
 	github.com/vishvananda/netlink v1.2.1 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.56.3 // indirect
