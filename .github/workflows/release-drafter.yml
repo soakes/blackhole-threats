@@ -92,6 +92,44 @@ jobs:
             echo "${key}=${value}" >> "${GITHUB_OUTPUT}"
           done < <(bash scripts/next-release.sh)
 
+      - name: Delete stale empty draft release
+        if: github.event_name != 'pull_request_target' && steps.release_gate.outputs.release_required != 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const defaultBranch = context.payload.repository.default_branch
+            const releases = await github.paginate(github.rest.repos.listReleases, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            })
+
+            const staleDrafts = releases.filter((release) => {
+              const tagName = release.tag_name || ''
+              const target = release.target_commitish || ''
+              const body = release.body || ''
+
+              return release.draft &&
+                /^v\d+\.\d+\.\d+$/.test(tagName) &&
+                (target === defaultBranch || target === `refs/heads/${defaultBranch}`) &&
+                body.includes('## Included Changes') &&
+                body.includes('No changes')
+            })
+
+            if (staleDrafts.length === 0) {
+              core.notice('No stale empty release drafts found.')
+              return
+            }
+
+            for (const release of staleDrafts) {
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.id,
+              })
+              core.notice(`Deleted stale empty draft release ${release.tag_name} (#${release.id}).`)
+            }
+
       - name: Update draft release
         if: github.event_name != 'pull_request_target' && steps.release_gate.outputs.release_required == 'true'
         uses: release-drafter/release-drafter@v7

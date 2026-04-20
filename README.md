@@ -671,7 +671,7 @@ refresh for this repository.
 - `Promote Release Candidate`
   - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention
 - `Release Drafter`
-  - keeps a curated draft release updated on `main` when there is at least one release-bearing change queued, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
+  - keeps a curated draft release updated on `main` when there is at least one release-bearing change queued, removes stale empty automated drafts when there are no release-bearing changes left, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
 - `Release Assets`
   - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, and uses Release Drafter output with a concise commit-history fallback for direct-to-`main` changes
 - `Publish Signed Debian Repository`
