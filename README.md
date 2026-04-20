@@ -668,7 +668,7 @@ refresh for this repository.
 - `Container Image`
   - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms, publishes `main` for the default branch, publishes `rc` plus full `v*-rc.*` tags for release candidates, and publishes stable tags plus `latest` for promoted releases
 - `Automated Release Candidate`
-  - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, then promotes the same commit to a stable `v*` tag and dispatches the stable publish workflows
+  - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, then promotes the same commit to a stable `v*` tag and dispatches the publish workflows from the current default branch with the target tag passed explicitly
 - `Dependabot Auto Merge`
   - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges only green Dependabot PRs, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
 - `Promote Release Candidate`
@@ -676,9 +676,9 @@ refresh for this repository.
 - `Release Drafter`
   - keeps a curated draft release updated on `main` when there is at least one release-bearing change queued, removes stale empty automated drafts when there are no release-bearing changes left, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
 - `Release Assets`
-  - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, and uses Release Drafter output with a concise commit-history fallback for direct-to-`main` changes
+  - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, uses an existing draft body when one already exists for the tag, and supports recovery dispatches from the current default branch with `release_ref=<tag>`
 - `Publish Signed Debian Repository`
-  - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Astro-based landing site, signs the repository, and deploys both to GitHub Pages for stable `v*` tags only
+  - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Astro-based landing site, signs the repository, deploys both to GitHub Pages for stable `v*` tags, and supports recovery dispatches from the current default branch with `release_ref=<stable-tag>`
 - `Deploy Pages Site`
   - rebuilds the Astro landing site on `main`, overlays it onto the latest published Pages snapshot, and republishes the combined result without requiring a new release tag
 - `Refresh Build and Runtime Pins`

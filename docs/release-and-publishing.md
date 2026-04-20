@@ -51,10 +51,17 @@ Behavior:
 - runs `scripts/next-release.sh`
 - skips tagging if no release-bearing commits are queued
 - creates the next `-rc` tag when a release is required
-- dispatches `container-image.yml` and `release-assets.yml`
+- dispatches `container-image.yml` and `release-assets.yml` from the current
+  default branch with the target tag passed explicitly
 - waits for those prerelease publish paths to succeed
 - creates the stable tag from the same commit
 - dispatches the stable publish workflows
+
+Recovery path:
+
+- if a tagged publish ever needs to be replayed, dispatch the publish workflow
+  from the current default branch and set `release_ref` to the existing tag
+  rather than re-running an old tag-pinned workflow definition
 
 Important consequence:
 
@@ -75,6 +82,7 @@ This keeps the GitHub Releases page aligned with the actual release gate.
 Trigger:
 
 - trusted `v*` tags
+- manual `workflow_dispatch` with `release_ref=<tag>` for publish recovery
 
 Published outputs:
 
@@ -91,6 +99,7 @@ Triggers:
 - pull requests for validation-only builds
 - pushes to `main`
 - trusted `v*` tags
+- manual `workflow_dispatch` with `release_ref=<tag>` for publish recovery
 
 Published channels:
 
@@ -103,6 +112,7 @@ Published channels:
 Trigger:
 
 - trusted stable `v*` tags only
+- manual `workflow_dispatch` with `release_ref=<stable-tag>` for recovery
 
 Outputs:
 

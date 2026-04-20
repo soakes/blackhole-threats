@@ -3,6 +3,11 @@ name: Container Image
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Release tag to publish with the current workflow definition, for example v1.2.3 or v1.2.3-rc.1
+        required: false
+        type: string
   push:
     branches:
       - main
@@ -10,12 +15,14 @@ on:
       - v*
 
 concurrency:
-  group: container-${{ github.ref }}
+  group: container-${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref }}
   cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
+  RELEASE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}
 
 permissions:
   contents: read
@@ -31,11 +38,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Compute build metadata
         id: prep
         run: |
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           version="$(git describe --tags --always --dirty 2>/dev/null || printf '%s' dev)"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
@@ -64,7 +73,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ steps.prep.outputs.version }}
-            VCS_REF=${{ github.sha }}
+            VCS_REF=${{ steps.prep.outputs.source_sha }}
             BUILD_DATE=${{ steps.prep.outputs.build_date }}
 
       - name: Verify container bootstrap
@@ -116,14 +125,14 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ steps.prep.outputs.version }}
-            VCS_REF=${{ github.sha }}
+            VCS_REF=${{ steps.prep.outputs.source_sha }}
             BUILD_DATE=${{ steps.prep.outputs.build_date }}
 
   verify-publish-ref:
     name: Verify Publish Ref
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v'))
+      (github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/tags/v') || startsWith(inputs.release_ref || '', 'v')))
     runs-on: ubuntu-latest
 
     steps:
@@ -132,21 +141,27 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Ensure publish ref is trusted
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
             exit 0
           fi
 
-          git fetch origin main --depth=1
-          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+          default_branch="${DEFAULT_BRANCH}"
+          publish_commit="$(git rev-parse HEAD^0)"
+
+          git fetch origin "${default_branch}:refs/remotes/origin/${default_branch}" --force
+          git merge-base --is-ancestor "${publish_commit}" "refs/remotes/origin/${default_branch}"
 
   docker-publish:
     name: Publish GHCR Image
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v'))
+      (github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/tags/v') || startsWith(inputs.release_ref || '', 'v')))
     runs-on: ubuntu-latest
     needs:
       - docker-build
@@ -161,11 +176,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Compute build metadata
         id: prep
         run: |
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           version="$(git describe --tags --always --dirty 2>/dev/null || printf '%s' dev)"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
@@ -187,13 +204,51 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.') }}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.') }}
-            type=raw,value=rc,enable=${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, '-rc.') }}
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.') }}
+
+      - name: Compute publish tags
+        id: publish_tags
+        run: |
+          image="${REGISTRY}/${IMAGE_NAME}"
+          ref_name="${RELEASE_REF}"
+
+          if [ "${GITHUB_REF}" = "refs/heads/main" ] && [ "${{ github.event_name }}" = "push" ]; then
+            {
+              echo "tags<<EOF"
+              printf '%s\n' "${image}:main"
+              echo "EOF"
+            } >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          if [[ "${ref_name}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)-rc\.[0-9]+$ ]]; then
+            {
+              echo "tags<<EOF"
+              printf '%s\n' \
+                "${image}:${ref_name}" \
+                "${image}:rc"
+              echo "EOF"
+            } >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          if [[ "${ref_name}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            major="${BASH_REMATCH[1]}"
+            minor="${BASH_REMATCH[2]}"
+            patch="${BASH_REMATCH[3]}"
+            {
+              echo "tags<<EOF"
+              printf '%s\n' \
+                "${image}:${ref_name}" \
+                "${image}:${major}.${minor}.${patch}" \
+                "${image}:${major}.${minor}" \
+                "${image}:latest"
+              echo "EOF"
+            } >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "Unsupported publish ref: ${ref_name}" >&2
+          exit 1
 
       - name: Build and push image
         uses: docker/build-push-action@v7
@@ -201,11 +256,11 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.publish_tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ steps.prep.outputs.version }}
-            VCS_REF=${{ github.sha }}
+            VCS_REF=${{ steps.prep.outputs.source_sha }}
             BUILD_DATE=${{ steps.prep.outputs.build_date }}

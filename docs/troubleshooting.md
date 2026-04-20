@@ -172,6 +172,16 @@ If you still see an empty draft:
 - confirm the stale draft body matches the automated empty-draft pattern rather
   than a maintainer-created draft
 
+If you see a non-empty draft for a tag that should already be published:
+
+- confirm the matching stable `Release Assets` run succeeded
+- if the failed run came from an older tag snapshot, dispatch `Release Assets`
+  from the current default branch with `release_ref=<tag>` so the recovery uses
+  the latest workflow logic
+- check `Container Image` and `Publish Signed Debian Repository` for the same
+  tag too; a stable release is not fully healthy until all three publish paths
+  agree
+
 ## A Dependabot PR Did Not Merge Automatically
 
 Checks:
@@ -192,6 +202,9 @@ Checks:
 - confirm `Publish Signed Debian Repository` succeeded
 - confirm the `apt-repository` environment secrets are present
 - confirm GitHub Pages is enabled with GitHub Actions as the publishing source
+- if the original stable-tag run used stale workflow logic, dispatch `Publish
+  Signed Debian Repository` from the current default branch with
+  `release_ref=<stable-tag>`
 
 Useful things to verify in the published site:
 

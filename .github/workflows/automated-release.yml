@@ -88,13 +88,14 @@ jobs:
           git tag -a "${{ steps.candidate.outputs.candidate_tag }}" -m "Release candidate ${{ steps.candidate.outputs.candidate_tag }}"
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.candidate_tag }}"
 
-      - name: Dispatch tag-driven publish workflows
+      - name: Dispatch prerelease publish workflows
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run container-image.yml --ref "${{ steps.candidate.outputs.candidate_tag }}"
-          gh workflow run release-assets.yml --ref "${{ steps.candidate.outputs.candidate_tag }}"
+          dispatch_ref="${{ github.event.repository.default_branch }}"
+          gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
+          gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
 
       - name: Wait for prerelease publish workflows
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
@@ -143,9 +144,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run container-image.yml --ref "${{ steps.candidate.outputs.stable_tag }}"
-          gh workflow run release-assets.yml --ref "${{ steps.candidate.outputs.stable_tag }}"
-          gh workflow run publish-apt-repository.yml --ref "${{ steps.candidate.outputs.stable_tag }}"
+          dispatch_ref="${{ github.event.repository.default_branch }}"
+          gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.stable_tag }}"
+          gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.stable_tag }}"
+          gh workflow run publish-apt-repository.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.stable_tag }}"
 
       - name: Write workflow summary
         run: |

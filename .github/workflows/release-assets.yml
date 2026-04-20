@@ -5,10 +5,19 @@ on:
     tags:
       - v*
   workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Release tag to publish with the current workflow definition, for example v1.2.3 or v1.2.3-rc.1
+        required: false
+        type: string
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref }}
   cancel-in-progress: false
+
+env:
+  CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
+  RELEASE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}
 
 permissions:
   contents: read
@@ -16,7 +25,9 @@ permissions:
 jobs:
   verify-release-tag:
     name: Verify Release Tag
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v'))
     runs-on: ubuntu-latest
 
     steps:
@@ -25,15 +36,23 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Ensure release tag points to main
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          git fetch origin main --depth=1
-          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+          default_branch="${DEFAULT_BRANCH}"
+          release_commit="$(git rev-parse HEAD^0)"
+
+          git fetch origin "${default_branch}:refs/remotes/origin/${default_branch}" --force
+          git merge-base --is-ancestor "${release_commit}" "refs/remotes/origin/${default_branch}"
 
   binaries:
     name: Build Binary ${{ matrix.goos }}/${{ matrix.goarch }}
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v'))
     runs-on: ubuntu-latest
     needs:
       - verify-release-tag
@@ -56,6 +75,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -66,7 +86,8 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=${GITHUB_REF_NAME:-dev}" >> "$GITHUB_OUTPUT"
+          echo "version=${RELEASE_REF:-dev}" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Build release binary
@@ -74,7 +95,7 @@ jobs:
           mkdir -p dist
           make build-cross \
             VERSION=${{ steps.meta.outputs.version }} \
-            COMMIT=${{ github.sha }} \
+            COMMIT=${{ steps.meta.outputs.commit }} \
             BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             GOOS=${{ matrix.goos }} \
             GOARCH=${{ matrix.goarch }} \
@@ -94,7 +115,9 @@ jobs:
 
   packages:
     name: Build Debian ${{ matrix.arch }}
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v'))
     runs-on: ubuntu-latest
     needs:
       - verify-release-tag
@@ -111,11 +134,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=${GITHUB_REF_NAME:-dev}" >> "$GITHUB_OUTPUT"
+          echo "version=${RELEASE_REF:-dev}" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Build Debian package in Debian trixie
@@ -124,7 +149,7 @@ jobs:
             -e DEBIAN_FRONTEND=noninteractive \
             -e ARCH=${{ matrix.arch }} \
             -e VERSION=${{ steps.meta.outputs.version }} \
-            -e COMMIT=${{ github.sha }} \
+            -e COMMIT=${{ steps.meta.outputs.commit }} \
             -e BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             -v "$PWD:/src" \
             -w /src \
@@ -158,7 +183,9 @@ jobs:
 
   source-packages:
     name: Build Debian Source Package
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v'))
     runs-on: ubuntu-latest
     needs:
       - verify-release-tag
@@ -168,12 +195,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Build Debian source package in Debian trixie
         run: |
           docker run --rm \
             -e DEBIAN_FRONTEND=noninteractive \
-            -e VERSION=${{ github.ref_name }} \
+            -e VERSION=${{ env.RELEASE_REF }} \
             -v "$PWD:/src" \
             -w /src \
             debian:trixie \
@@ -221,7 +249,9 @@ jobs:
 
   publish:
     name: Publish GitHub Release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v'))
     needs:
       - binaries
       - packages
@@ -236,11 +266,12 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Classify release tag
         id: release
         run: |
-          ref_name="${GITHUB_REF_NAME}"
+          ref_name="${RELEASE_REF}"
 
           if [[ "${ref_name}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
             prerelease=true
@@ -274,6 +305,7 @@ jobs:
           echo "prerelease=${prerelease}" >> "${GITHUB_OUTPUT}"
           echo "stable_tag=${stable_tag}" >> "${GITHUB_OUTPUT}"
           echo "previous_tag=${previous_tag}" >> "${GITHUB_OUTPUT}"
+          echo "release_sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -327,8 +359,8 @@ jobs:
         uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
-          name: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
+          name: ${{ env.RELEASE_REF }}
+          tag: ${{ env.RELEASE_REF }}
           publish: false
           prerelease: ${{ steps.release.outputs.prerelease }}
         env:
@@ -338,12 +370,24 @@ jobs:
         env:
           DRAFTER_BODY: ${{ steps.drafter.outputs.body }}
         run: |
+          release_ref="${RELEASE_REF}"
+          release_sha="${{ steps.release.outputs.release_sha }}"
           previous_tag="${{ steps.release.outputs.previous_tag }}"
-          release_target="${GITHUB_REF_NAME}"
+          existing_body="$(gh release view "${release_ref}" --json body --jq .body 2>/dev/null || true)"
+          release_body="${existing_body}"
+          if [ -z "${release_body}" ]; then
+            release_body="${DRAFTER_BODY}"
+          fi
+          body_has_overview=false
+          if printf '%s\n' "${release_body}" | grep -Fq '## Release Overview'; then
+            body_has_overview=true
+          fi
+
+          release_target="${release_ref}"
           release_label="Release"
 
           if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
-            release_target="${GITHUB_REF_NAME%-rc.*}"
+            release_target="${release_ref%-rc.*}"
             release_label="Release candidate"
           fi
 
@@ -351,32 +395,36 @@ jobs:
             printf '## Release Overview\n\n'
             printf '%s for `%s`.\n\n' "${release_label}" "${release_target}"
             printf -- '- Published tag: [`%s`](https://github.com/%s/releases/tag/%s)\n' \
-              "${GITHUB_REF_NAME}" \
+              "${release_ref}" \
               "${GITHUB_REPOSITORY}" \
-              "${GITHUB_REF_NAME}"
+              "${release_ref}"
             if [ -n "${previous_tag}" ]; then
               printf -- '- Full diff: [`%s...%s`](https://github.com/%s/compare/%s...%s)\n' \
                 "${previous_tag}" \
-                "${GITHUB_REF_NAME}" \
+                "${release_ref}" \
                 "${GITHUB_REPOSITORY}" \
                 "${previous_tag}" \
-                "${GITHUB_REF_NAME}"
+                "${release_ref}"
             fi
             printf '\n'
           }
 
-          if [ -n "${DRAFTER_BODY}" ]; then
-            {
-              write_release_overview
-              printf '%s\n' "${DRAFTER_BODY}"
-            } > release/release-notes.md
+          if [ -n "${release_body}" ]; then
+            if [ "${body_has_overview}" = "true" ]; then
+              printf '%s\n' "${release_body}" > release/release-notes.md
+            else
+              {
+                write_release_overview
+                printf '%s\n' "${release_body}"
+              } > release/release-notes.md
+            fi
 
             if grep -Eq '^[*+-][[:space:]]+No changes$' release/release-notes.md; then
-              bash scripts/generate-release-notes.sh "${previous_tag}" "${GITHUB_SHA}" release/release-notes.md
+              bash scripts/generate-release-notes.sh "${previous_tag}" "${release_sha}" release/release-notes.md
               exit 0
             fi
           else
-            bash scripts/generate-release-notes.sh "${previous_tag}" "${GITHUB_SHA}" release/release-notes.md
+            bash scripts/generate-release-notes.sh "${previous_tag}" "${release_sha}" release/release-notes.md
           fi
 
       - name: Generate checksums
@@ -388,6 +436,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          release_ref="${RELEASE_REF}"
           prerelease_args=()
           final_release_args=(--draft=false --latest)
           if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
@@ -395,15 +444,15 @@ jobs:
             final_release_args=(--draft=false --prerelease)
           fi
 
-          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            gh release edit "${GITHUB_REF_NAME}" \
-              --title "${GITHUB_REF_NAME}" \
+          if gh release view "${release_ref}" >/dev/null 2>&1; then
+            gh release edit "${release_ref}" \
+              --title "${release_ref}" \
               --notes-file release/release-notes.md \
               --draft \
               "${prerelease_args[@]}"
           else
-            gh release create "${GITHUB_REF_NAME}" \
-              --title "${GITHUB_REF_NAME}" \
+            gh release create "${release_ref}" \
+              --title "${release_ref}" \
               --notes-file release/release-notes.md \
               --verify-tag \
               --draft \
@@ -416,5 +465,5 @@ jobs:
             exit 1
           fi
 
-          gh release upload "${GITHUB_REF_NAME}" --clobber "${assets[@]}"
-          gh release edit "${GITHUB_REF_NAME}" "${final_release_args[@]}"
+          gh release upload "${release_ref}" --clobber "${assets[@]}"
+          gh release edit "${release_ref}" "${final_release_args[@]}"

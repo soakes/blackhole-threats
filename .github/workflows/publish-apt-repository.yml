@@ -5,18 +5,29 @@ on:
     tags:
       - v*
   workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Stable release tag to publish with the current workflow definition, for example v1.2.3
+        required: false
+        type: string
 
 concurrency:
-  group: publish-apt-repository
+  group: publish-apt-repository-${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref }}
   cancel-in-progress: false
 
 permissions:
   contents: read
 
+env:
+  CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
+  RELEASE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}
+
 jobs:
   verify-release-tag:
     name: Verify Release Tag
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')
+    if: |
+      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v') && !contains(inputs.release_ref || '', '-rc.'))
     runs-on: ubuntu-latest
 
     steps:
@@ -25,15 +36,23 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Ensure release tag points to main
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          git fetch origin main --depth=1
-          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+          default_branch="${DEFAULT_BRANCH}"
+          release_commit="$(git rev-parse HEAD^0)"
+
+          git fetch origin "${default_branch}:refs/remotes/origin/${default_branch}" --force
+          git merge-base --is-ancestor "${release_commit}" "refs/remotes/origin/${default_branch}"
 
   build:
     name: Build Signed Debian Repository
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')
+    if: |
+      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v') && !contains(inputs.release_ref || '', '-rc.'))
     needs:
       - verify-release-tag
     runs-on: ubuntu-latest
@@ -48,6 +67,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -57,7 +77,8 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=${GITHUB_REF_NAME:-dev}" >> "$GITHUB_OUTPUT"
+          echo "version=${RELEASE_REF:-dev}" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           echo "site_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
 
@@ -68,7 +89,7 @@ jobs:
             -e HOST_UID=$(id -u) \
             -e HOST_GID=$(id -g) \
             -e VERSION=${{ steps.meta.outputs.version }} \
-            -e COMMIT=${{ github.sha }} \
+            -e COMMIT=${{ steps.meta.outputs.commit }} \
             -e BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             -v "$PWD:/src" \
             -w /src \
@@ -197,7 +218,7 @@ jobs:
           make website-build \
             SITE_URL=${{ steps.meta.outputs.site_url }} \
             SITE_RELEASE_VERSION=${{ steps.meta.outputs.version }} \
-            SITE_COMMIT=${{ github.sha }} \
+            SITE_COMMIT=${{ steps.meta.outputs.commit }} \
             SITE_BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             SITE_APT_FINGERPRINT="${{ steps.signing.outputs.pretty_fingerprint }}"
           cp -a website/dist/. site/
@@ -215,7 +236,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           cp -a "${GITHUB_WORKSPACE}/site/." .
           git add --all
-          git commit -m "pages: snapshot ${GITHUB_REF_NAME}"
+          git commit -m "pages: snapshot ${RELEASE_REF}"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force origin HEAD:pages-snapshot
 
@@ -226,7 +247,9 @@ jobs:
 
   deploy:
     name: Deploy Debian Repository
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')
+    if: |
+      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.release_ref || '', 'v') && !contains(inputs.release_ref || '', '-rc.'))
     needs:
       - build
     runs-on: ubuntu-latest
