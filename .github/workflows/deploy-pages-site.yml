@@ -26,6 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Restore durable repository snapshot branch
@@ -41,6 +42,9 @@ jobs:
         uses: actions/configure-pages@v6
         with:
           enablement: true
+
+      - name: Fetch tags
+        run: git fetch --tags --force
 
       - name: Resolve latest published repository snapshot fallback
         id: published
@@ -63,10 +67,12 @@ jobs:
           test -n "${stable_sha}"
           test -n "${stable_build_date}"
 
-          echo "run_id=${run_id}" >> "$GITHUB_OUTPUT"
-          echo "stable_tag=${stable_tag}" >> "$GITHUB_OUTPUT"
-          echo "stable_sha=${stable_sha}" >> "$GITHUB_OUTPUT"
-          echo "stable_build_date=${stable_build_date}" >> "$GITHUB_OUTPUT"
+          {
+            echo "run_id=${run_id}"
+            echo "stable_tag=${stable_tag}"
+            echo "stable_sha=${stable_sha}"
+            echo "stable_build_date=${stable_build_date}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Restore latest published repository snapshot
         env:
@@ -87,6 +93,34 @@ jobs:
           test -f site/blackhole-threats-archive-keyring.gpg
           test -f site/blackhole-threats-archive-keyring.fingerprint.txt
 
+      - name: Refresh published website metadata
+        run: |
+          fingerprint="$(tr '\n' ' ' < site/blackhole-threats-archive-keyring.fingerprint.txt | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')"
+          if [ -f site/website-metadata.json ]; then
+            highlights_json="$(jq -c '.release_highlights // []' site/website-metadata.json)"
+          else
+            highlights_json="$(
+              bash scripts/generate-website-highlights.sh "${{ steps.published.outputs.stable_tag }}" \
+                | jq -Rsc 'split("\n") | map(select(length > 0))'
+            )"
+          fi
+
+          jq -n \
+            --arg site_url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" \
+            --arg release_version "${{ steps.published.outputs.stable_tag }}" \
+            --arg commit "${{ steps.published.outputs.stable_sha }}" \
+            --arg build_date "${{ steps.published.outputs.stable_build_date }}" \
+            --arg apt_fingerprint "${fingerprint}" \
+            --argjson release_highlights "${highlights_json}" \
+            '{
+              site_url: $site_url,
+              release_version: $release_version,
+              commit: $commit,
+              build_date: $build_date,
+              apt_fingerprint: $apt_fingerprint,
+              release_highlights: $release_highlights
+            }' > site/website-metadata.json
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -97,16 +131,16 @@ jobs:
       - name: Build landing site
         run: |
           npm ci --prefix website
-          fingerprint="$(tr '\n' ' ' < site/blackhole-threats-archive-keyring.fingerprint.txt | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')"
           make website-build \
             SITE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ \
             SITE_RELEASE_VERSION="${{ steps.published.outputs.stable_tag }}" \
             SITE_COMMIT="${{ steps.published.outputs.stable_sha }}" \
             SITE_BUILD_DATE="${{ steps.published.outputs.stable_build_date }}" \
-            SITE_APT_FINGERPRINT="${fingerprint}"
+            SITE_APT_FINGERPRINT="$(jq -r '.apt_fingerprint' site/website-metadata.json)"
           cp -a website/dist/. site/
           test -f site/index.html
           test -f site/dists/stable/InRelease
+          test -f site/website-metadata.json
 
       - name: Publish durable Pages snapshot branch
         env:

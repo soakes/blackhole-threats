@@ -21,6 +21,7 @@ const requiredDomIds = [
   "ui-commit",
   "ui-date",
   "ui-fingerprint",
+  "ui-highlights",
   "apt-code-container",
   "footer-version",
   "footer-commit",

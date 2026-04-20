@@ -38,6 +38,7 @@ jobs:
         run: |
           bash -n scripts/build-apt-repository.sh
           bash -n scripts/generate-release-notes.sh
+          bash -n scripts/generate-website-highlights.sh
           bash -n scripts/next-release.sh
           bash -n scripts/prepare-debian-changelog.sh
           sh -n packaging/container/rootfs/usr/local/bin/blackhole-threats-entrypoint
@@ -58,9 +59,9 @@ jobs:
           npm --prefix website run check
           make website-build \
             SITE_URL=https://soakes.github.io/blackhole-threats/ \
-            SITE_RELEASE_VERSION=0.0.0-ci.${GITHUB_RUN_NUMBER} \
-            SITE_COMMIT=${GITHUB_SHA} \
-            SITE_BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+            SITE_RELEASE_VERSION="0.0.0-ci.${GITHUB_RUN_NUMBER}" \
+            SITE_COMMIT="${GITHUB_SHA}" \
+            SITE_BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             SITE_APT_FINGERPRINT="CI preview signing fingerprint"
 
       - name: Run vet

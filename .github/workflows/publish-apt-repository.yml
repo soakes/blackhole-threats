@@ -66,8 +66,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
           ref: ${{ env.CHECKOUT_REF }}
+
+      - name: Fetch tags
+        run: git fetch --tags --force
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
@@ -77,17 +81,19 @@ jobs:
       - name: Compute build metadata
         id: meta
         run: |
-          echo "version=${RELEASE_REF:-dev}" >> "$GITHUB_OUTPUT"
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-          echo "site_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_OUTPUT"
+          {
+            echo "version=${RELEASE_REF:-dev}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "site_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build APT repository in Debian trixie
         run: |
           docker run --rm \
             -e DEBIAN_FRONTEND=noninteractive \
-            -e HOST_UID=$(id -u) \
-            -e HOST_GID=$(id -g) \
+            -e HOST_UID="$(id -u)" \
+            -e HOST_GID="$(id -g)" \
             -e VERSION=${{ steps.meta.outputs.version }} \
             -e COMMIT=${{ steps.meta.outputs.commit }} \
             -e BUILD_DATE=${{ steps.meta.outputs.build_date }} \
@@ -130,10 +136,12 @@ jobs:
           fingerprint="$(gpg --batch --with-colons --fingerprint "${key_id}" | awk -F: '$1 == "fpr" { print $10; exit }')"
           test -n "${fingerprint}"
           pretty_fingerprint="$(printf '%s' "${fingerprint}" | sed 's/.\{4\}/& /g; s/ $//')"
-          echo "gnupg_home=${GNUPGHOME}" >> "$GITHUB_OUTPUT"
-          echo "key_id=${key_id}" >> "$GITHUB_OUTPUT"
-          echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
-          echo "pretty_fingerprint=${pretty_fingerprint}" >> "$GITHUB_OUTPUT"
+          {
+            echo "gnupg_home=${GNUPGHOME}"
+            echo "key_id=${key_id}"
+            echo "fingerprint=${fingerprint}"
+            echo "pretty_fingerprint=${pretty_fingerprint}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Export archive public key
         env:
@@ -222,6 +230,29 @@ jobs:
             SITE_BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             SITE_APT_FINGERPRINT="${{ steps.signing.outputs.pretty_fingerprint }}"
           cp -a website/dist/. site/
+
+      - name: Generate website metadata
+        run: |
+          highlights_json="$(
+            bash scripts/generate-website-highlights.sh "${RELEASE_REF}" \
+              | jq -Rsc 'split("\n") | map(select(length > 0))'
+          )"
+
+          jq -n \
+            --arg site_url "${{ steps.meta.outputs.site_url }}" \
+            --arg release_version "${{ steps.meta.outputs.version }}" \
+            --arg commit "${{ steps.meta.outputs.commit }}" \
+            --arg build_date "${{ steps.meta.outputs.build_date }}" \
+            --arg apt_fingerprint "${{ steps.signing.outputs.pretty_fingerprint }}" \
+            --argjson release_highlights "${highlights_json}" \
+            '{
+              site_url: $site_url,
+              release_version: $release_version,
+              commit: $commit,
+              build_date: $build_date,
+              apt_fingerprint: $apt_fingerprint,
+              release_highlights: $release_highlights
+            }' > site/website-metadata.json
 
       - name: Publish durable repository snapshot branch
         env:
