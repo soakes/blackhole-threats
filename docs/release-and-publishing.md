@@ -97,13 +97,11 @@ Published outputs:
 Triggers:
 
 - pull requests for validation-only builds
-- pushes to `main`
 - trusted `v*` tags
-- manual `workflow_dispatch` with `release_ref=<tag>` for publish recovery
+- manual `workflow_dispatch` for validation, or with `release_ref=<tag>` for publish recovery
 
 Published channels:
 
-- `ghcr.io/soakes/blackhole-threats:main` for the default branch
 - `ghcr.io/soakes/blackhole-threats:rc` plus full `v*-rc.*` tags for release candidates
 - stable semver tags and `latest` for promoted stable releases
 

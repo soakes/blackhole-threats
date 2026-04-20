@@ -183,8 +183,7 @@ separately.
 docker pull ghcr.io/soakes/blackhole-threats:latest
 ```
 
-`latest` tracks stable tagged releases. The default branch image is published as
-`ghcr.io/soakes/blackhole-threats:main`, and release candidates publish to the
+`latest` tracks stable tagged releases, and release candidates publish to the
 `ghcr.io/soakes/blackhole-threats:rc` channel plus their full `v*-rc.*` tag.
 
 ### Build a Debian Package
@@ -527,9 +526,8 @@ docker run -d \
   ghcr.io/soakes/blackhole-threats:latest
 ```
 
-If you want the moving default-branch build instead of the latest release, use
-`ghcr.io/soakes/blackhole-threats:main`. If you want the current release
-candidate stream, use `ghcr.io/soakes/blackhole-threats:rc`.
+If you want the current release candidate stream, use
+`ghcr.io/soakes/blackhole-threats:rc`.
 
 Inspect the live service logs with:
 
@@ -666,7 +664,7 @@ refresh for this repository.
 - `Build and Validate`
   - runs formatting, vetting, tests, native build checks, binary smoke tests, Debian package validation, signed APT repository validation with an ephemeral archive key, and cross-build validation
 - `Container Image`
-  - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms, publishes `main` for the default branch, publishes `rc` plus full `v*-rc.*` tags for release candidates, and publishes stable tags plus `latest` for promoted releases
+  - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms on pull requests, release tags, and manual dispatches, and only publishes `rc`, `v*-rc.*`, stable semver tags, and `latest` for release tags or explicit recovery dispatches
 - `Automated Release Candidate`
   - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, then promotes the same commit to a stable `v*` tag and dispatches the publish workflows from the current default branch with the target tag passed explicitly
 - `Dependabot Auto Merge`

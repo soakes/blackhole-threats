@@ -193,8 +193,9 @@ automation.
 - Do not broaden workflow `permissions:` unless there is a clear operational
   need and the change is documented.
 - Keep write permissions scoped to the specific publish jobs that need them.
-- Container publishing is limited to pushes to `main` and trusted `v*` /
-  `v*-rc.*` tags.
+- Container publishing is limited to trusted `v*` / `v*-rc.*` tags and
+  explicit recovery dispatches; pull requests run validation-only container
+  builds.
 - Release publishing is limited to trusted `v*` / `v*-rc.*` tags.
 - Signed APT repository publishing is limited to trusted stable `v*` tags.
 - The separate landing-site Pages deploy may run from `main`, but it must only
