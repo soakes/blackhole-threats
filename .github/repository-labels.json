@@ -35,6 +35,21 @@
     "description": "Dependency and runtime version updates"
   },
   {
+    "name": "major",
+    "color": "B60205",
+    "description": "Semver-major dependency updates"
+  },
+  {
+    "name": "minor",
+    "color": "FBCA04",
+    "description": "Semver-minor dependency updates"
+  },
+  {
+    "name": "patch",
+    "color": "0E8A16",
+    "description": "Semver-patch dependency updates"
+  },
+  {
     "name": "github-actions",
     "color": "1D76DB",
     "description": "GitHub Actions dependency updates"

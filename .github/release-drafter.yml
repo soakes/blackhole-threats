@@ -97,13 +97,13 @@ autolabeler:
       - ".github/workflows/release-assets.yml"
   - label: dependencies
     branch:
-      - '/^dependabot\/.+/'
       - '/^automation\/.+/'
+      - '/^dependabot\/docker\/.+/'
+      - '/^dependabot\/go_modules\/.+/'
+      - '/^dependabot\/gomod\/.+/'
     title:
-      - '/^(deps|build|container|ci): bump /i'
+      - '/^(deps|build|container)(\([^)]+\))?: bump /i'
       - '/^chore: refresh /i'
-    body:
-      - '/updated-dependencies:/'
   - label: github-actions
     files:
       - ".github/workflows/**/*"

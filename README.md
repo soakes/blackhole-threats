@@ -666,6 +666,8 @@ refresh for this repository.
   - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms, publishes `main` for the default branch, publishes `rc` plus full `v*-rc.*` tags for release candidates, and publishes stable tags plus `latest` for promoted releases
 - `Automated Release Candidate`
   - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, then promotes the same commit to a stable `v*` tag and dispatches the stable publish workflows
+- `Dependabot Auto Merge`
+  - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges only green Dependabot PRs, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
 - `Promote Release Candidate`
   - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention
 - `Release Drafter`
@@ -682,6 +684,12 @@ refresh for this repository.
 ### Automated Updates
 
 - Dependabot checks GitHub Actions, Go modules, and Docker base images daily
+- Dependabot pull requests that pass `Build and Validate` can be merged
+  automatically by the dedicated merge workflow
+- all semver version updates, including major bumps, stay eligible for
+  Dependabot auto-merge; the repo keeps ecosystem PRs separate and raises the
+  open-PR limit so a broken major update does not block newer updates from
+  being proposed
 - The scheduled refresh workflow updates the pinned Docker Go build image
   version and the pinned Docker `s6-overlay` release metadata
 
@@ -698,6 +706,15 @@ refresh for this repository.
 - automated version bumps use `feat` for minor releases, `fix`/`perf`/`revert`/
   `container`/`build`/`deps`/`packaging` for patch releases, and
   `BREAKING CHANGE:` or `type!:` for major releases
+- the Dependabot merge workflow preserves the pull request title as the squash
+  commit subject, so release-bearing Dependabot updates such as `deps:` and
+  `container:` continue into the automated release flow after merge, while
+  `ci:` updates stay non-release-bearing by design
+- Dependabot semver labels such as `major`, `minor`, and `patch` are kept in
+  the repository label catalog so failing update PRs are easier to triage
+- the Dependabot merge workflow uses the repo-scoped `GITHUB_TOKEN`; it does
+  not require a separate long-lived merge secret just to review or merge
+  in-repo Dependabot pull requests
 - docs-only, README-only, website-only, and Pages-only changes are
   non-release-bearing by default; they can refresh the public site from `main`,
   but they should not create or advance a release draft, RC tag, or stable tag
@@ -731,6 +748,7 @@ blackhole-threats/
 │       ├── automated-release.yml
 │       ├── build-and-validate.yml
 │       ├── container-image.yml
+│       ├── dependabot-auto-merge.yml
 │       ├── deploy-pages-site.yml
 │       ├── promote-release.yml
 │       ├── publish-apt-repository.yml

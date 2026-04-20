@@ -2,18 +2,32 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    open-pull-requests-limit: 10
     schedule:
       interval: daily
+    allow:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
     commit-message:
       prefix: "ci"
     labels:
-      - dependencies
+      - ci
       - github-actions
 
   - package-ecosystem: gomod
     directory: /
+    open-pull-requests-limit: 10
     schedule:
       interval: daily
+    allow:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
     commit-message:
       prefix: "deps"
     labels:
@@ -22,8 +36,15 @@ updates:
 
   - package-ecosystem: docker
     directory: /
+    open-pull-requests-limit: 10
     schedule:
       interval: daily
+    allow:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
     commit-message:
       prefix: "container"
     labels:

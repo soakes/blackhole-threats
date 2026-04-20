@@ -205,9 +205,21 @@ automation.
 - Keep the scheduled toolchain/runtime refresh workflow branch-scoped and
   PR-based; it should update the root pins and open a reviewable pull request
   rather than pushing directly to `main`.
+- Dependabot auto-merge should only act after `Build and Validate` succeeds for
+  the PR head revision, and it should preserve the Dependabot pull request
+  title as the squash commit subject so existing `deps:` / `container:` release
+  automation still works after merge.
+- Dependabot version-update automation intentionally does not semver-filter PRs:
+  patch, minor, and major updates are all eligible to merge after successful
+  validation, and the repo keeps enough Dependabot PR capacity that a failing
+  major update does not block fresh update proposals.
 - Keep the APT signing material in the protected `apt-repository` GitHub Actions
   environment. Do not move archive-signing secrets to broad repository-level
   secrets.
+- Prefer the repo-scoped `GITHUB_TOKEN` for in-repo Dependabot merge automation
+  under the current repository settings. Do not introduce a long-lived personal
+  access token just to merge Dependabot PRs unless branch protection or GitHub
+  App policy changes make that necessary.
 - If you change workflow behavior, update the README CI/CD, APT repository, or
   contribution sections in the same change when operator behavior changes.
 
