@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const websiteRoot = path.resolve(__dirname, "..");
 
 const requiredFiles = [
+  "favicon.svg",
   "index.html",
   "main.js",
   "style.css",
@@ -80,6 +81,11 @@ checkNodeSyntax("vite.config.js");
 assert(
   indexHtml.includes('<script type="module" src="./main.js"></script>'),
   "index.html must load the Vite entrypoint via ./main.js",
+);
+
+assert(
+  indexHtml.includes('<link rel="icon" href="./favicon.svg" type="image/svg+xml" />'),
+  "index.html must declare the SVG favicon via ./favicon.svg",
 );
 
 assert(

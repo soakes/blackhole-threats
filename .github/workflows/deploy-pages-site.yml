@@ -94,16 +94,14 @@ jobs:
           test -f site/blackhole-threats-archive-keyring.fingerprint.txt
 
       - name: Refresh published website metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           fingerprint="$(tr '\n' ' ' < site/blackhole-threats-archive-keyring.fingerprint.txt | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')"
-          if [ -f site/website-metadata.json ]; then
-            highlights_json="$(jq -c '.release_highlights // []' site/website-metadata.json)"
-          else
-            highlights_json="$(
-              bash scripts/generate-website-highlights.sh "${{ steps.published.outputs.stable_tag }}" \
-                | jq -Rsc 'split("\n") | map(select(length > 0))'
-            )"
-          fi
+          highlights_json="$(
+            bash scripts/generate-website-highlights.sh "${{ steps.published.outputs.stable_tag }}" \
+              | jq -Rsc 'split("\n") | map(select(length > 0))'
+          )"
 
           jq -n \
             --arg site_url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" \

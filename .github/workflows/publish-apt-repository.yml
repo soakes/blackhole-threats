@@ -232,6 +232,8 @@ jobs:
           cp -a website/dist/. site/
 
       - name: Generate website metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           highlights_json="$(
             bash scripts/generate-website-highlights.sh "${RELEASE_REF}" \
