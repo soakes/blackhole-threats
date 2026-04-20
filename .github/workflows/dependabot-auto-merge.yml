@@ -40,6 +40,7 @@ jobs:
         id: candidates
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           WORKFLOW_RUN_PULL_REQUESTS: ${{ toJson(github.event.workflow_run.pull_requests) }}
         run: |
@@ -50,7 +51,7 @@ jobs:
           else
             prs="$(
               gh pr list --state open --json number,author,baseRefName \
-                --jq '.[] | select(.author.login == "dependabot[bot]" and .baseRefName == "'"${DEFAULT_BRANCH}"'") | .number'
+                --jq '.[] | select((.author.login == "dependabot[bot]" or .author.login == "dependabot") and .baseRefName == "'"${DEFAULT_BRANCH}"'") | .number'
             )"
           fi
 
@@ -68,8 +69,10 @@ jobs:
         if: steps.candidates.outputs.count != '0'
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           CANDIDATE_PRS: ${{ steps.candidates.outputs.prs }}
+          TRIGGERING_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
 
@@ -84,6 +87,7 @@ jobs:
                 state
                 isDraft
                 baseRefName
+                headRefOid
                 mergeable
                 mergeStateStatus
                 reviewDecision
@@ -94,19 +98,16 @@ jobs:
                   nodes {
                     commit {
                       statusCheckRollup {
-                        state
                         contexts(first: 100) {
                           nodes {
                             __typename
                             ... on CheckRun {
                               name
-                              isRequired
                               status
                               conclusion
                             }
                             ... on StatusContext {
                               context
-                              isRequired
                               state
                             }
                           }
@@ -121,6 +122,17 @@ jobs:
 
           escape_markdown() {
             printf '%s' "$1" | sed 's/|/\\|/g'
+          }
+
+          latest_build_validate_run() {
+            local head_sha="$1"
+
+            gh run list \
+              --workflow "Build and Validate" \
+              --limit 100 \
+              --json databaseId,headSha,event,conclusion,url \
+              --jq '.[] | select(.event == "pull_request" and .headSha == "'"${head_sha}"'" and .conclusion == "success") | @base64' \
+              | head -n1
           }
 
           {
@@ -156,13 +168,12 @@ jobs:
             state="$(jq -r '.state' <<<"${pr_json}")"
             draft="$(jq -r '.isDraft' <<<"${pr_json}")"
             base_ref="$(jq -r '.baseRefName' <<<"${pr_json}")"
+            head_sha="$(jq -r '.headRefOid // ""' <<<"${pr_json}")"
             mergeable="$(jq -r '.mergeable' <<<"${pr_json}")"
             merge_state_status="$(jq -r '.mergeStateStatus' <<<"${pr_json}")"
             review_decision="$(jq -r '.reviewDecision // ""' <<<"${pr_json}")"
-            check_state="$(jq -r '.commits.nodes[0].commit.statusCheckRollup.state // "PENDING"' <<<"${pr_json}")"
-            check_count="$(jq '[.commits.nodes[0].commit.statusCheckRollup.contexts.nodes[]?] | length' <<<"${pr_json}")"
 
-            if [ "${author}" != "dependabot[bot]" ]; then
+            if [ "${author}" != "dependabot[bot]" ] && [ "${author}" != "dependabot" ]; then
               skipped=$((skipped + 1))
               printf '| [#%s](%s) | skipped | Not authored by Dependabot. |\n' "${pr_number}" "${url}" >> "${GITHUB_STEP_SUMMARY}"
               continue
@@ -180,10 +191,34 @@ jobs:
               continue
             fi
 
-            if [ "${check_count}" -eq 0 ] || [ "${check_state}" != "SUCCESS" ]; then
+            validation_detail=''
+            if [ -z "${head_sha}" ]; then
               skipped=$((skipped + 1))
-              printf '| [#%s](%s) | skipped | Latest validation checks are not green yet. |\n' "${pr_number}" "${url}" >> "${GITHUB_STEP_SUMMARY}"
+              printf '| [#%s](%s) | skipped | Could not resolve the current PR head SHA. |\n' "${pr_number}" "${url}" >> "${GITHUB_STEP_SUMMARY}"
               continue
+            fi
+
+            if [ "${{ github.event_name }}" = "workflow_run" ]; then
+              if [ "${TRIGGERING_HEAD_SHA:-}" != "${head_sha}" ]; then
+                skipped=$((skipped + 1))
+                printf '| [#%s](%s) | skipped | The successful workflow run was for an older PR head revision. |\n' "${pr_number}" "${url}" >> "${GITHUB_STEP_SUMMARY}"
+                continue
+              fi
+              validation_detail=' Build and Validate succeeded for the current PR head revision via the triggering workflow run.'
+            else
+              validation_run="$(latest_build_validate_run "${head_sha}")"
+              if [ -z "${validation_run}" ]; then
+                skipped=$((skipped + 1))
+                printf '| [#%s](%s) | skipped | No successful Build and Validate run was found for the current PR head revision. |\n' "${pr_number}" "${url}" >> "${GITHUB_STEP_SUMMARY}"
+                continue
+              fi
+
+              validation_url="$(printf '%s' "${validation_run}" | base64 --decode | jq -r '.url // ""')"
+              if [ -n "${validation_url}" ]; then
+                validation_detail=" Verified against successful Build and Validate run ${validation_url}."
+              else
+                validation_detail=' Verified against a successful Build and Validate run for the current PR head revision.'
+              fi
             fi
 
             approval_detail=''
@@ -211,7 +246,7 @@ jobs:
               else
                 detail='Merged with the original conventional commit title preserved.'
               fi
-              detail="${detail}${approval_detail}"
+              detail="${detail}${validation_detail}${approval_detail}"
               printf '| [#%s](%s) | merged | %s |\n' "${pr_number}" "${url}" "$(escape_markdown "${detail}")" >> "${GITHUB_STEP_SUMMARY}"
             else
               skipped=$((skipped + 1))
