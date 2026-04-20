@@ -125,6 +125,9 @@ automation.
   repository label catalog in `.github/repository-labels.json`, and the
   `Release Drafter` workflow. Keep those aligned when labels, categories, or
   version-bump expectations change.
+- Keep `.github/release-drafter.yml` aligned with `scripts/next-release.sh`.
+  Labels such as `documentation`, `ci`, and `maintenance` may still appear in
+  grouped release notes, but they must not request a version bump on their own.
 - `Makefile` is the source of truth for local build targets and build metadata
   wiring. Keep new local build or validation steps there when they are intended
   for contributors.
@@ -151,6 +154,12 @@ automation.
 - Website-only GitHub Pages refreshes from `main` should reuse the latest
   published repository snapshot rather than forcing a new release tag or
   rebuilding unsigned repository metadata.
+- Documentation-only, README-only, architecture-only, website-only, and
+  Pages-only changes are non-release-bearing by default. They may refresh the
+  GitHub Pages site from `main`, but they must not create or advance a release
+  draft, release-candidate tag, or stable tag unless the same change also
+  intentionally changes shipped runtime, container, Debian, or release-pipeline
+  behavior.
 - `scripts/build-apt-repository.sh` is expected to keep publishing both binary
   and source package indexes. Do not regress `deb-src` support.
 - Keep Debian changelog entries factual, operator-facing, and suitable for an
@@ -266,9 +275,9 @@ automation.
   "push a release" without clarifying stability, interpret that as "create or
   verify the next prerelease"; treat stable promotion as a separate explicit
   operator action.
-- Website-only or CI-only landing-page updates should use the normal `main`
-  push path and the Pages-site deploy workflow; do not cut a release tag just
-  to refresh the public website.
+- Docs-only, README-only, website-only, or CI-only landing-page updates should
+  use the normal `main` push path and the Pages-site deploy workflow; do not
+  cut a release tag just to refresh the public website.
 - Do not hand-push routine `v*` or `v*-rc.*` tags. Automated tagging from
   `main` is the normal path; manual promotion or manual tags should be reserved
   for explicit recovery or operator-directed exceptions.

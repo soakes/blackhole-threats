@@ -669,7 +669,7 @@ refresh for this repository.
 - `Promote Release Candidate`
   - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention
 - `Release Drafter`
-  - keeps a curated draft release updated on `main`, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
+  - keeps a curated draft release updated on `main` when there is at least one release-bearing change queued, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
 - `Release Assets`
   - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, and uses Release Drafter output with a concise commit-history fallback for direct-to-`main` changes
 - `Publish Signed Debian Repository`
@@ -698,6 +698,11 @@ refresh for this repository.
 - automated version bumps use `feat` for minor releases, `fix`/`perf`/`revert`/
   `container`/`build`/`deps`/`packaging` for patch releases, and
   `BREAKING CHANGE:` or `type!:` for major releases
+- docs-only, README-only, website-only, and Pages-only changes are
+  non-release-bearing by default; they can refresh the public site from `main`,
+  but they should not create or advance a release draft, RC tag, or stable tag
+  unless they also change shipped runtime, packaging, container, or release
+  behavior
 - pull request labels drive the grouped GitHub release notes; the Release
   Drafter workflow applies most labels automatically, but the correct label
   should still be set before merge for unusual changes
@@ -878,6 +883,9 @@ make package
 - use a release-bearing type when the change should publish artifacts;
   `docs`, `ci`, `chore`, `test`, and `refactor` do not cut a release by
   default
+- use the non-release-bearing path for README, docs, and website-only work
+  unless the same change intentionally modifies shipped artifacts or release
+  automation
 - explain the operational reason for the change
 - keep README, packaging, and workflow docs in sync with behavior
 - include test coverage or a verification note when code paths change
