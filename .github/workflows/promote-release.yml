@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  actions: write
+  actions: read
   contents: write
 
 jobs:
@@ -59,7 +59,6 @@ jobs:
             echo "prerelease_tag=${prerelease_tag}"
             echo "stable_tag=${stable_tag}"
             echo "release_sha=${release_sha}"
-            echo "default_branch=${default_branch}"
           } >> "${GITHUB_OUTPUT}"
 
       - name: Create and push stable tag
@@ -83,37 +82,16 @@ jobs:
             exit 1
           fi
 
-      - name: Dispatch stable publish workflows
-        id: stable_dispatch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          dispatch_ref="${{ steps.promote.outputs.default_branch }}"
-          stable_tag="${{ steps.promote.outputs.stable_tag }}"
-
-          container_run_url="$(
-            gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${stable_tag}"
-          )"
-          release_run_url="$(
-            gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${stable_tag}"
-          )"
-          apt_run_url="$(
-            gh workflow run publish-apt-repository.yml --ref "${dispatch_ref}" -f release_ref="${stable_tag}"
-          )"
-
-          {
-            echo "container_run_id=${container_run_url##*/}"
-            echo "release_run_id=${release_run_url##*/}"
-            echo "apt_run_id=${apt_run_url##*/}"
-          } >> "${GITHUB_OUTPUT}"
-
       - name: Wait for stable publish workflows
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run watch "${{ steps.stable_dispatch.outputs.container_run_id }}" --exit-status
-          gh run watch "${{ steps.stable_dispatch.outputs.release_run_id }}" --exit-status
-          gh run watch "${{ steps.stable_dispatch.outputs.apt_run_id }}" --exit-status
+          bash scripts/wait-for-tag-workflow-runs.sh \
+            "${{ steps.promote.outputs.stable_tag }}" \
+            "${{ steps.promote.outputs.release_sha }}" \
+            release-assets.yml \
+            container-image.yml \
+            publish-apt-repository.yml
 
       - name: Write workflow summary
         run: |

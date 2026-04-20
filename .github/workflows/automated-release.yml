@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  actions: write
+  actions: read
   contents: write
 
 jobs:
@@ -98,30 +98,16 @@ jobs:
             exit 1
           fi
 
-      - name: Dispatch prerelease publish workflows
-        id: prerelease_dispatch
-        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          dispatch_ref="${{ github.event.repository.default_branch }}"
-          container_run_url="$(
-            gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
-          )"
-          release_run_url="$(
-            gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
-          )"
-
-          echo "container_run_id=${container_run_url##*/}" >> "${GITHUB_OUTPUT}"
-          echo "release_run_id=${release_run_url##*/}" >> "${GITHUB_OUTPUT}"
-
       - name: Wait for prerelease publish workflows
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run watch "${{ steps.prerelease_dispatch.outputs.release_run_id }}" --exit-status
-          gh run watch "${{ steps.prerelease_dispatch.outputs.container_run_id }}" --exit-status
+          bash scripts/wait-for-tag-workflow-runs.sh \
+            "${{ steps.candidate.outputs.candidate_tag }}" \
+            "${RELEASE_SHA}" \
+            release-assets.yml \
+            container-image.yml
 
       - name: Create and push stable tag
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
@@ -143,15 +129,17 @@ jobs:
             exit 1
           fi
 
-      - name: Dispatch stable publish workflows
+      - name: Wait for stable publish workflows
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          dispatch_ref="${{ github.event.repository.default_branch }}"
-          gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.stable_tag }}"
-          gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.stable_tag }}"
-          gh workflow run publish-apt-repository.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.stable_tag }}"
+          bash scripts/wait-for-tag-workflow-runs.sh \
+            "${{ steps.candidate.outputs.stable_tag }}" \
+            "${RELEASE_SHA}" \
+            release-assets.yml \
+            container-image.yml \
+            publish-apt-repository.yml
 
       - name: Write workflow summary
         run: |
