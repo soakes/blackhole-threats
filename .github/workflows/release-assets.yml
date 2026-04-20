@@ -360,78 +360,11 @@ jobs:
             exit 1
           fi
 
-      - name: Generate release notes
-        id: drafter
-        uses: release-drafter/release-drafter@v7
-        with:
-          config-name: release-drafter.yml
-          name: ${{ env.RELEASE_REF }}
-          tag: ${{ env.RELEASE_REF }}
-          publish: false
-          prerelease: ${{ steps.release.outputs.prerelease }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Write release notes
-        env:
-          DRAFTER_BODY: ${{ steps.drafter.outputs.body }}
         run: |
-          release_ref="${RELEASE_REF}"
           release_sha="${{ steps.release.outputs.release_sha }}"
           previous_tag="${{ steps.release.outputs.previous_tag }}"
-          existing_body="$(gh release view "${release_ref}" --json body --jq .body 2>/dev/null || true)"
-          release_body="${existing_body}"
-          if [ -z "${release_body}" ]; then
-            release_body="${DRAFTER_BODY}"
-          fi
-          body_has_overview=false
-          if printf '%s\n' "${release_body}" | grep -Fq '## Release Overview'; then
-            body_has_overview=true
-          fi
-
-          release_target="${release_ref}"
-          release_label="Release"
-
-          if [ "${{ steps.release.outputs.prerelease }}" = "true" ]; then
-            release_target="${release_ref%-rc.*}"
-            release_label="Release candidate"
-          fi
-
-          write_release_overview() {
-            printf "## Release Overview\n\n"
-            printf "%s for \`%s\`.\n\n" "${release_label}" "${release_target}"
-            printf -- "- Published tag: [\`%s\`](https://github.com/%s/releases/tag/%s)\n" \
-              "${release_ref}" \
-              "${GITHUB_REPOSITORY}" \
-              "${release_ref}"
-            if [ -n "${previous_tag}" ]; then
-              printf -- "- Full diff: [\`%s...%s\`](https://github.com/%s/compare/%s...%s)\n" \
-                "${previous_tag}" \
-                "${release_ref}" \
-                "${GITHUB_REPOSITORY}" \
-                "${previous_tag}" \
-                "${release_ref}"
-            fi
-            printf "\n"
-          }
-
-          if [ -n "${release_body}" ]; then
-            if [ "${body_has_overview}" = "true" ]; then
-              printf '%s\n' "${release_body}" > release/release-notes.md
-            else
-              {
-                write_release_overview
-                printf '%s\n' "${release_body}"
-              } > release/release-notes.md
-            fi
-
-            if grep -Eq '^[*+-][[:space:]]+No changes$' release/release-notes.md; then
-              bash scripts/generate-release-notes.sh "${previous_tag}" "${release_sha}" release/release-notes.md
-              exit 0
-            fi
-          else
-            bash scripts/generate-release-notes.sh "${previous_tag}" "${release_sha}" release/release-notes.md
-          fi
+          bash scripts/generate-release-notes.sh "${previous_tag}" "${release_sha}" release/release-notes.md
 
       - name: Generate checksums
         run: |
@@ -468,6 +401,7 @@ jobs:
             gh release upload "${release_ref}" --clobber "${assets[@]}"
 
             edit_args=(
+              --draft=false
               --title "${release_ref}"
               --notes-file release/release-notes.md
             )
