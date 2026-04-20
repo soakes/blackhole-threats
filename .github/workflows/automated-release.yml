@@ -89,45 +89,29 @@ jobs:
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.candidate_tag }}"
 
       - name: Dispatch prerelease publish workflows
+        id: prerelease_dispatch
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           dispatch_ref="${{ github.event.repository.default_branch }}"
-          gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
-          gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
+          container_run_url="$(
+            gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
+          )"
+          release_run_url="$(
+            gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${{ steps.candidate.outputs.candidate_tag }}"
+          )"
+
+          echo "container_run_id=${container_run_url##*/}" >> "${GITHUB_OUTPUT}"
+          echo "release_run_id=${release_run_url##*/}" >> "${GITHUB_OUTPUT}"
 
       - name: Wait for prerelease publish workflows
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          resolve_run_id() {
-            local workflow="$1"
-            local run_id=''
-
-            for _ in $(seq 1 24); do
-              run_id="$(
-                gh run list --workflow "${workflow}" --limit 30 --json databaseId,event,headSha \
-                  --jq '.[] | select(.event == "workflow_dispatch" and .headSha == "'"${RELEASE_SHA}"'") | .databaseId' \
-                  | head -n1 || true
-              )"
-              if [ -n "${run_id}" ]; then
-                printf '%s\n' "${run_id}"
-                return 0
-              fi
-              sleep 5
-            done
-
-            echo "Timed out waiting for ${workflow} run registration" >&2
-            return 1
-          }
-
-          release_run_id="$(resolve_run_id release-assets.yml)"
-          container_run_id="$(resolve_run_id container-image.yml)"
-
-          gh run watch "${release_run_id}" --exit-status
-          gh run watch "${container_run_id}" --exit-status
+          gh run watch "${{ steps.prerelease_dispatch.outputs.release_run_id }}" --exit-status
+          gh run watch "${{ steps.prerelease_dispatch.outputs.container_run_id }}" --exit-status
 
       - name: Create and push stable tag
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
@@ -152,16 +136,16 @@ jobs:
       - name: Write workflow summary
         run: |
           if [ "${{ steps.existing.outputs.release_required }}" = "false" ]; then
-            printf 'Release tag already present on HEAD: `%s`\n' "${{ steps.existing.outputs.existing_tag }}" >> "${GITHUB_STEP_SUMMARY}"
+            printf "Release tag already present on HEAD: \`%s\`\n" "${{ steps.existing.outputs.existing_tag }}" >> "${GITHUB_STEP_SUMMARY}"
             exit 0
           fi
 
           if [ "${{ steps.release.outputs.release_required }}" != "true" ]; then
-            printf 'No releasable commits were found since `%s`; skipping automated RC tagging.\n' "${{ steps.release.outputs.previous_tag }}" >> "${GITHUB_STEP_SUMMARY}"
+            printf "No releasable commits were found since \`%s\`; skipping automated RC tagging.\n" "${{ steps.release.outputs.previous_tag }}" >> "${GITHUB_STEP_SUMMARY}"
             exit 0
           fi
 
-          printf 'Created automated release candidate `%s`, validated the prerelease publish path, and promoted it to stable `%s` (%s bump from `%s`).\n' \
+          printf "Created automated release candidate \`%s\`, validated the prerelease publish path, and promoted it to stable \`%s\` (%s bump from \`%s\`).\n" \
             "${{ steps.candidate.outputs.candidate_tag }}" \
             "${{ steps.candidate.outputs.stable_tag }}" \
             "${{ steps.release.outputs.bump }}" \

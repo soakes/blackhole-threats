@@ -35,6 +35,7 @@ jobs:
         id: promote
         run: |
           prerelease_tag="${{ inputs.prerelease_tag }}"
+          default_branch="${{ github.event.repository.default_branch }}"
 
           if [[ ! "${prerelease_tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
             echo "Expected a prerelease tag like v1.2.3-rc.2, got: ${prerelease_tag}" >&2
@@ -50,12 +51,15 @@ jobs:
           fi
 
           release_sha="$(git rev-parse "${prerelease_tag}^{commit}")"
-          git fetch origin main --depth=1
-          git merge-base --is-ancestor "${release_sha}" origin/main
+          git fetch origin "refs/heads/${default_branch}:refs/remotes/origin/${default_branch}" --force
+          git merge-base --is-ancestor "${release_sha}" "refs/remotes/origin/${default_branch}"
 
-          echo "prerelease_tag=${prerelease_tag}" >> "${GITHUB_OUTPUT}"
-          echo "stable_tag=${stable_tag}" >> "${GITHUB_OUTPUT}"
-          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "prerelease_tag=${prerelease_tag}"
+            echo "stable_tag=${stable_tag}"
+            echo "release_sha=${release_sha}"
+            echo "default_branch=${default_branch}"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Create and push stable tag
         env:
@@ -69,15 +73,39 @@ jobs:
             "refs/tags/${{ steps.promote.outputs.stable_tag }}"
 
       - name: Dispatch stable publish workflows
+        id: stable_dispatch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run container-image.yml --ref "${{ steps.promote.outputs.stable_tag }}"
-          gh workflow run release-assets.yml --ref "${{ steps.promote.outputs.stable_tag }}"
-          gh workflow run publish-apt-repository.yml --ref "${{ steps.promote.outputs.stable_tag }}"
+          dispatch_ref="${{ steps.promote.outputs.default_branch }}"
+          stable_tag="${{ steps.promote.outputs.stable_tag }}"
+
+          container_run_url="$(
+            gh workflow run container-image.yml --ref "${dispatch_ref}" -f release_ref="${stable_tag}"
+          )"
+          release_run_url="$(
+            gh workflow run release-assets.yml --ref "${dispatch_ref}" -f release_ref="${stable_tag}"
+          )"
+          apt_run_url="$(
+            gh workflow run publish-apt-repository.yml --ref "${dispatch_ref}" -f release_ref="${stable_tag}"
+          )"
+
+          {
+            echo "container_run_id=${container_run_url##*/}"
+            echo "release_run_id=${release_run_url##*/}"
+            echo "apt_run_id=${apt_run_url##*/}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Wait for stable publish workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run watch "${{ steps.stable_dispatch.outputs.container_run_id }}" --exit-status
+          gh run watch "${{ steps.stable_dispatch.outputs.release_run_id }}" --exit-status
+          gh run watch "${{ steps.stable_dispatch.outputs.apt_run_id }}" --exit-status
 
       - name: Write workflow summary
         run: |
-          printf 'Promoted `%s` to stable tag `%s`.\n' \
+          printf "Promoted \`%s\` to stable tag \`%s\`.\n" \
             "${{ steps.promote.outputs.prerelease_tag }}" \
             "${{ steps.promote.outputs.stable_tag }}" >> "${GITHUB_STEP_SUMMARY}"
