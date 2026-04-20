@@ -51,7 +51,7 @@ jobs:
           else
             prs="$(
               gh pr list --state open --json number,author,baseRefName \
-                --jq '.[] | select((.author.login == "dependabot[bot]" or .author.login == "dependabot") and .baseRefName == "'"${DEFAULT_BRANCH}"'") | .number'
+                --jq '.[] | select((.author.login == "dependabot[bot]" or .author.login == "dependabot" or .author.login == "app/dependabot") and .baseRefName == "'"${DEFAULT_BRANCH}"'") | .number'
             )"
           fi
 
@@ -173,7 +173,7 @@ jobs:
             merge_state_status="$(jq -r '.mergeStateStatus' <<<"${pr_json}")"
             review_decision="$(jq -r '.reviewDecision // ""' <<<"${pr_json}")"
 
-            if [ "${author}" != "dependabot[bot]" ] && [ "${author}" != "dependabot" ]; then
+            if [ "${author}" != "dependabot[bot]" ] && [ "${author}" != "dependabot" ] && [ "${author}" != "app/dependabot" ]; then
               skipped=$((skipped + 1))
               printf '| [#%s](%s) | skipped | Not authored by Dependabot. |\n' "${pr_number}" "${url}" >> "${GITHUB_STEP_SUMMARY}"
               continue
