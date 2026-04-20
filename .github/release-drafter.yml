@@ -1,0 +1,144 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+change-template: "- $TITLE ([#$NUMBER]($URL))"
+change-title-escapes: '\<*_&@`'
+exclude-labels:
+  - skip-changelog
+categories:
+  - title: "Breaking Changes"
+    labels:
+      - breaking
+  - title: "Features"
+    labels:
+      - enhancement
+  - title: "Fixes"
+    labels:
+      - bug
+  - title: "Packaging and Delivery"
+    labels:
+      - container
+      - packaging
+  - title: "Release Workflow"
+    labels:
+      - release
+  - title: "CI and Automation"
+    labels:
+      - ci
+  - title: "Dependencies"
+    collapse-after: 3
+    labels:
+      - dependencies
+  - title: "Documentation"
+    labels:
+      - documentation
+  - title: "Maintenance"
+    labels:
+      - maintenance
+version-resolver:
+  major:
+    labels:
+      - breaking
+  minor:
+    labels:
+      - enhancement
+  patch:
+    labels:
+      - bug
+      - dependencies
+      - container
+      - packaging
+      - ci
+      - maintenance
+      - security
+      - release
+  default: patch
+autolabeler:
+  - label: breaking
+    title:
+      - '/^[A-Za-z0-9][A-Za-z0-9-]*(\([^)]+\))?!:/'
+    body:
+      - '/BREAKING CHANGE:/'
+  - label: enhancement
+    title:
+      - '/^feat(\([^)]+\))?:/i'
+    branch:
+      - '/^feat\/.+/'
+      - '/^feature\/.+/'
+  - label: bug
+    title:
+      - '/^(fix|perf|revert)(\([^)]+\))?:/i'
+    branch:
+      - '/^fix\/.+/'
+      - '/^bugfix\/.+/'
+  - label: documentation
+    title:
+      - '/^docs(\([^)]+\))?:/i'
+    files:
+      - "README.md"
+      - "docs/**/*"
+      - "**/*.md"
+      - "debian/*.8"
+  - label: ci
+    title:
+      - '/^ci(\([^)]+\))?:/i'
+      - '/^fix\(ci\):/i'
+  - label: release
+    title:
+      - '/^fix\(release\):/i'
+      - '/^release(\([^)]+\))?:/i'
+    files:
+      - "scripts/next-release.sh"
+      - "scripts/generate-release-notes.sh"
+      - ".github/release-drafter.yml"
+      - ".github/workflows/automated-release.yml"
+      - ".github/workflows/promote-release.yml"
+      - ".github/workflows/release-assets.yml"
+  - label: dependencies
+    branch:
+      - '/^dependabot\/.+/'
+      - '/^automation\/.+/'
+    title:
+      - '/^(deps|build|container|ci): bump /i'
+      - '/^chore: refresh /i'
+    body:
+      - '/updated-dependencies:/'
+  - label: github-actions
+    files:
+      - ".github/workflows/**/*"
+      - ".github/dependabot.yml"
+  - label: docker
+    files:
+      - "Dockerfile"
+      - "packaging/container/**/*"
+  - label: go
+    files:
+      - "go.mod"
+      - "go.sum"
+      - "cmd/**/*"
+      - "internal/**/*"
+  - label: container
+    title:
+      - '/^container(\([^)]+\))?:/i'
+  - label: packaging
+    title:
+      - '/^(packaging|build)(\([^)]+\))?:/i'
+    files:
+      - "debian/**/*"
+      - "scripts/build-apt-repository.sh"
+      - "scripts/prepare-debian-changelog.sh"
+      - ".github/workflows/publish-apt-repository.yml"
+  - label: maintenance
+    title:
+      - '/^(chore|refactor|test)(\([^)]+\))?:/i'
+template: |
+  ## Included Changes
+
+  $CHANGES
+
+  ## Published Artifacts
+
+  - Release binaries for `linux/amd64`, `linux/arm64`, and `linux/arm`
+  - Debian packages for `amd64`, `arm64`, and `armhf`, plus a Debian source package
+  - Checksums attached to the release
+  - Container images published to `ghcr.io/soakes/blackhole-threats`
+  - Stable releases also publish the signed GitHub Pages APT repository

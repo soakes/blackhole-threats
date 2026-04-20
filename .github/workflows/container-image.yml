@@ -1,0 +1,211 @@
+name: Container Image
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+concurrency:
+  group: container-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build:
+    name: Validate Container Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Compute build metadata
+        id: prep
+        run: |
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          version="$(git describe --tags --always --dirty 2>/dev/null || printf '%s' dev)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=test-
+
+      - name: Build test image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: blackhole-threats:test
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.prep.outputs.version }}
+            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ steps.prep.outputs.build_date }}
+
+      - name: Verify container bootstrap
+        run: |
+          mkdir -p .tmp-config
+          cid="$(docker run -d -v "$PWD/.tmp-config:/config" blackhole-threats:test)"
+          sleep 5
+          test -f .tmp-config/blackhole-threats.yaml
+          docker logs "$cid"
+          docker kill --signal=SIGINT "$cid"
+          docker wait "$cid"
+          logs="$(docker logs "$cid" 2>&1)"
+          printf '%s\n' "$logs"
+          printf '%s\n' "$logs" | grep -F 'msg="Starting blackhole-threats"'
+          printf '%s\n' "$logs" | grep -F 'tag_version='
+          printf '%s\n' "$logs" | grep -F 'msg="Stopped blackhole-threats"'
+          docker rm -f "$cid"
+          rm -rf .tmp-config
+
+      - name: Smoke test container entrypoints
+        run: |
+          mkdir -p .tmp-config
+          cp examples/blackhole-threats.yaml .tmp-config/custom.yaml
+          docker run --rm --entrypoint /usr/sbin/blackhole-threats blackhole-threats:test -version
+          docker run --rm \
+            --entrypoint /usr/local/bin/blackhole-threats-entrypoint \
+            -v "$PWD/.tmp-config:/config" \
+            -e BLACKHOLE_THREATS_EXTRA_OPTS="-check-config" \
+            blackhole-threats:test
+          docker run --rm \
+            --entrypoint /usr/local/bin/blackhole-threats-entrypoint \
+            -v "$PWD/.tmp-config:/config" \
+            -e BLACKHOLE_THREATS_CONF="/config/custom.yaml" \
+            -e BLACKHOLE_THREATS_EXTRA_OPTS="-check-config" \
+            blackhole-threats:test
+          ! docker run --rm \
+            --entrypoint /usr/local/bin/blackhole-threats-entrypoint \
+            -e BLACKHOLE_THREATS_CONF="/config/missing.yaml" \
+            blackhole-threats:test
+          rm -rf .tmp-config
+
+      - name: Validate published platforms
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.prep.outputs.version }}
+            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ steps.prep.outputs.build_date }}
+
+  verify-publish-ref:
+    name: Verify Publish Ref
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Ensure publish ref is trusted
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            exit 0
+          fi
+
+          git fetch origin main --depth=1
+          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main
+
+  docker-publish:
+    name: Publish GHCR Image
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    needs:
+      - docker-build
+      - verify-publish-ref
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Compute build metadata
+        id: prep
+        run: |
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          version="$(git describe --tags --always --dirty 2>/dev/null || printf '%s' dev)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.') }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.') }}
+            type=raw,value=rc,enable=${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, '-rc.') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.') }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.prep.outputs.version }}
+            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ steps.prep.outputs.build_date }}

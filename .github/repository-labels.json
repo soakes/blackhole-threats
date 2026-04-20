@@ -1,0 +1,77 @@
+[
+  {
+    "name": "breaking",
+    "color": "B60205",
+    "description": "Requires a major release"
+  },
+  {
+    "name": "enhancement",
+    "color": "A2EEEF",
+    "description": "New operator-facing functionality"
+  },
+  {
+    "name": "bug",
+    "color": "D73A4A",
+    "description": "Bug fixes and regressions"
+  },
+  {
+    "name": "documentation",
+    "color": "0075CA",
+    "description": "Documentation and operator guidance"
+  },
+  {
+    "name": "ci",
+    "color": "5319E7",
+    "description": "CI, workflow, and automation changes"
+  },
+  {
+    "name": "release",
+    "color": "F9D0C4",
+    "description": "Release process and publication changes"
+  },
+  {
+    "name": "dependencies",
+    "color": "0366D6",
+    "description": "Dependency and runtime version updates"
+  },
+  {
+    "name": "github-actions",
+    "color": "1D76DB",
+    "description": "GitHub Actions dependency updates"
+  },
+  {
+    "name": "docker",
+    "color": "0E8A16",
+    "description": "Docker and container dependency updates"
+  },
+  {
+    "name": "go",
+    "color": "0052CC",
+    "description": "Go module and toolchain dependency updates"
+  },
+  {
+    "name": "container",
+    "color": "FBCA04",
+    "description": "Container runtime and image behavior changes"
+  },
+  {
+    "name": "packaging",
+    "color": "C5DEF5",
+    "description": "Debian packaging and APT repository changes"
+  },
+  {
+    "name": "maintenance",
+    "color": "EDEDED",
+    "description": "General maintenance and internal cleanup"
+  },
+  {
+    "name": "security",
+    "color": "BFD4F2",
+    "description": "Security hardening or vulnerability remediation"
+  },
+  {
+    "name": "skip-changelog",
+    "color": "FFFFFF",
+    "description": "Exclude this pull request from release notes"
+  }
+]

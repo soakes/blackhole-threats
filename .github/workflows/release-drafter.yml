@@ -1,0 +1,92 @@
+name: Release Drafter
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+      - labeled
+      - unlabeled
+      - ready_for_review
+
+concurrency:
+  group: release-drafter-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  update_release_draft:
+    name: Update Release Draft
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository defaults
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Sync repository labels
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs')
+
+            const labels = JSON.parse(fs.readFileSync('.github/repository-labels.json', 'utf8'))
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                })
+
+                await github.rest.issues.updateLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description,
+                })
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error
+                }
+
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description,
+                })
+              }
+            }
+
+      - name: Auto-label pull request
+        if: github.event_name == 'pull_request_target'
+        uses: release-drafter/release-drafter/autolabeler@v7
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update draft release
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
