@@ -670,7 +670,7 @@ refresh for this repository.
 - `Automated Release Candidate`
   - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, then promotes the same commit to a stable `v*` tag and dispatches the publish workflows from the current default branch with the target tag passed explicitly
 - `Dependabot Auto Merge`
-  - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges only green Dependabot PRs, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
+  - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges green Dependabot PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
 - `Promote Release Candidate`
   - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention
 - `Release Drafter`
@@ -715,9 +715,9 @@ refresh for this repository.
   `ci:` updates stay non-release-bearing by design
 - Dependabot semver labels such as `major`, `minor`, and `patch` are kept in
   the repository label catalog so failing update PRs are easier to triage
-- the Dependabot merge workflow uses the repo-scoped `GITHUB_TOKEN`; it does
-  not require a separate long-lived merge secret just to review or merge
-  in-repo Dependabot pull requests
+- the Dependabot merge workflow uses the repo-scoped `GITHUB_TOKEN` by default
+  and only needs an optional `DEPENDABOT_AUTOMERGE_TOKEN` when GitHub policy
+  blocks workflow-file pull requests from being merged by the default token
 - docs-only, README-only, website-only, and Pages-only changes are
   non-release-bearing by default; they can refresh the public site from `main`,
   but they should not create or advance a release draft, RC tag, or stable tag

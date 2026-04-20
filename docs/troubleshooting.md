@@ -191,6 +191,12 @@ Checks:
 - confirm it is authored by `dependabot[bot]`
 - confirm there are no merge conflicts
 - confirm branch protection still allows squash merge after checks pass
+- if GitHub says to add `--auto`, confirm the workflow enabled auto-merge and
+  let GitHub finish the merge after the remaining requirements settle
+- if the PR changes files under `.github/workflows/`, confirm the optional
+  `DEPENDABOT_AUTOMERGE_TOKEN` secret exists with repository contents, pull
+  requests, and workflows write access; the default `GITHUB_TOKEN` cannot
+  merge workflow-file PRs under GitHub's workflow-permission rules
 
 If the PR is red, that is the intended stopping point for the automation path.
 

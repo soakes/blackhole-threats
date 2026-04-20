@@ -219,7 +219,10 @@ automation.
 - Prefer the repo-scoped `GITHUB_TOKEN` for in-repo Dependabot merge automation
   under the current repository settings. Do not introduce a long-lived personal
   access token just to merge Dependabot PRs unless branch protection or GitHub
-  App policy changes make that necessary.
+  App policy changes make that necessary. If workflow-file Dependabot PRs also
+  need to merge automatically, the supported exception is an optional
+  `DEPENDABOT_AUTOMERGE_TOKEN` with the minimum extra workflow permission needed
+  for that class of PR.
 - If you change workflow behavior, update the README CI/CD, APT repository, or
   contribution sections in the same change when operator behavior changes.
 

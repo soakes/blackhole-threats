@@ -173,12 +173,19 @@ Dependabot updates are part of the normal automation path.
 Current behavior:
 
 - Dependabot PRs run through `Build and Validate`
-- green PRs can be auto-merged by the dedicated Dependabot merge workflow
+- green PRs can be merged directly by the dedicated Dependabot merge workflow
+- when GitHub cannot merge immediately but the PR is otherwise eligible, the
+  workflow enables GitHub auto-merge so the PR can land as soon as the
+  remaining repository requirements are satisfied
 - the original PR title is preserved as the squash commit subject
 - `deps:` and `container:` updates remain release-bearing after merge
 - `ci:` updates remain non-release-bearing
 - patch, minor, and major version updates are all eligible for merge after
   validation
+- the repo-scoped `GITHUB_TOKEN` is the default merge credential, and an
+  optional `DEPENDABOT_AUTOMERGE_TOKEN` can be added if workflow-file
+  Dependabot PRs also need to merge automatically under GitHub's stricter
+  workflow-permission rules
 
 Operationally, this means passing dependency updates can flow all the way from
 PR to RC to stable publication without manual intervention.
