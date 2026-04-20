@@ -6,6 +6,13 @@ small: configuration loading, feed ingestion, route-table calculation, and BGP
 publication are kept in separate internal packages, while packaging and website
 assets stay outside the runtime path.
 
+See also:
+
+- [Documentation Index](README.md)
+- [Operations Guide](operations.md)
+- [Feed Behavior](feed-behavior.md)
+- [Release And Publishing](release-and-publishing.md)
+
 ## System Overview
 
 At a high level, the daemon:

@@ -15,7 +15,7 @@ Built for operators who want one service, one config format, and one release pat
 they can actually deploy: source builds, container images, Debian packages,
 and a signed APT repository.
 
-**Quick links:** [📦 Releases](https://github.com/soakes/blackhole-threats/releases) · [🐳 GHCR](https://ghcr.io/soakes/blackhole-threats) · [🔐 APT Repository](https://soakes.github.io/blackhole-threats/) · [🏗️ Architecture](docs/architecture.md)
+**Quick links:** [📦 Releases](https://github.com/soakes/blackhole-threats/releases) · [🐳 GHCR](https://ghcr.io/soakes/blackhole-threats) · [🔐 APT Repository](https://soakes.github.io/blackhole-threats/) · [📚 Documentation](docs/README.md) · [🏗️ Architecture](docs/architecture.md)
 
 ## 🧭 Table of Contents
 
@@ -62,6 +62,9 @@ Pick the path that matches how you deploy:
 - **Debian**: use the signed APT repository and install `blackhole-threats`
 - **Source**: run `make build` and execute `dist/blackhole-threats`
 - **Validation**: use `-check-config` or `-once` before putting the daemon into service
+
+Longer-form guides for operations, configuration, release flow, and deployment
+examples live under [`docs/`](docs/README.md).
 
 ### First Deployment Checklist
 
@@ -760,7 +763,14 @@ blackhole-threats/
 │       └── main.go
 ├── debian/
 ├── docs/
-│   └── architecture.md
+│   ├── README.md
+│   ├── architecture.md
+│   ├── config-reference.md
+│   ├── deployment-examples.md
+│   ├── feed-behavior.md
+│   ├── operations.md
+│   ├── release-and-publishing.md
+│   └── troubleshooting.md
 ├── examples/
 │   └── blackhole-threats.yaml
 ├── internal/
@@ -794,6 +804,9 @@ blackhole-threats/
   - container rootfs and S6 service definitions
 - `debian`
   - Debian packaging metadata
+- `docs`
+  - longer-form operator and maintainer guides, including operations, config
+    reference, release flow, deployment examples, and troubleshooting
 - `website`
   - Vite source for the GitHub Pages landing site that fronts the signed APT repository
 
