@@ -772,7 +772,7 @@ blackhole-threats/
 - `debian`
   - Debian packaging metadata
 - `website`
-  - Astro source for the GitHub Pages landing site that fronts the signed APT repository
+  - Vite source for the GitHub Pages landing site that fronts the signed APT repository
 
 ---
 
