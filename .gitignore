@@ -2,16 +2,20 @@
 ._*
 *.swp
 
-/blackhole-threats.yaml
 /blackhole-threats
+/blackhole-threats.yaml
 
+# Local editor settings
 /.vscode/
-/.cache/
-**/.cache/
-/.tmp-config/
-**/.tmp-config/
-/dist/
+
+# Local build outputs
 /_build/
-/website/.astro/
+/dist/
+
+# Tool caches
+.cache/
+.tmp-config/
+
+# Website build outputs
 /website/dist/
 /website/node_modules/
