@@ -269,6 +269,9 @@ automation.
   current turn after reviewing the changes.
 - Keep changes focused by concern: runtime logic, packaging, container, docs,
   and workflow hardening should be split when practical.
+- Split commits by concern when that makes review or future history clearer.
+  Do not combine unrelated cleanup, docs, workflow, and runtime changes into a
+  single commit when they can be separated cleanly.
 - Commits intended for `main` should follow a conventional format such as
   `feat: ...`, `fix: ...`, `docs: ...`, `ci: ...`, or `container: ...`.
 - Write a meaningful commit body whenever the change affects operators,
@@ -289,6 +292,9 @@ automation.
   rationale, release impact, and validation directly.
 - If you choose a subject prefix, prefer clear conventional-style prefixes.
   Existing repo automation already uses `chore`, `ci`, `deps`, and `container`.
+- If distinct changes should remain separate in `main`, prefer separate PRs or
+  another merge approach that preserves commit boundaries rather than relying on
+  a squash merge to keep them separate.
 - Treat `main` as release-candidate-ready: after `Build and Validate` passes
   for a push to `main`, the release workflow can automatically create the next
   `v*-rc.*` tag from merged commit history, run the prerelease publish path,
