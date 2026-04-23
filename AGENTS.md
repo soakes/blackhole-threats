@@ -283,6 +283,10 @@ automation.
 - Pull request labels drive the polished GitHub release notes. Prefer the
   correct release-note label even when the autolabeler would infer it, and fix
   labels before merge rather than relying on the direct-commit fallback.
+- Pull request titles and bodies should read like standard maintainer-authored
+  communication. Do not mention `AGENTS.md`, prompts, AI assistance, agent
+  workflow, or other internal instruction sources in PR content; state the
+  rationale, release impact, and validation directly.
 - If you choose a subject prefix, prefer clear conventional-style prefixes.
   Existing repo automation already uses `chore`, `ci`, `deps`, and `container`.
 - Treat `main` as release-candidate-ready: after `Build and Validate` passes
@@ -332,6 +336,9 @@ automation.
 These rules apply specifically to AI coding agents working in this repository.
 
 - Always read this file first before starting a task.
+- After creating or updating a PR branch and pushing it, switch the local
+  checkout back to `main` unless the user explicitly asks to stay on the
+  feature branch.
 - Prefer targeted changes over wide refactors.
 - Do not move `go.mod`, `go.sum`, `Makefile`, `Dockerfile`, or the `debian/`
   directory without an explicit task that requires it.
