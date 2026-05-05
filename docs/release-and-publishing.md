@@ -133,12 +133,15 @@ landing page together.
 Trigger:
 
 - pushes to `main`
+- successful `Publish Signed Debian Repository` completion
 
 Purpose:
 
 - refresh the website without cutting a release
 - reuse the latest published repository snapshot
 - avoid rebuilding unsigned APT metadata for website-only changes
+- republish the default-branch Pages artifact after stable APT publication so
+  the public landing site follows the latest signed snapshot
 
 ## Version Bump Rules
 

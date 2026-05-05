@@ -686,7 +686,7 @@ refresh for this repository.
 - `Publish Signed Debian Repository`
   - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Astro-based landing site, signs the repository, deploys both to GitHub Pages for stable `v*` tags, and supports recovery dispatches from the current default branch with `release_ref=<stable-tag>`
 - `Deploy Pages Site`
-  - rebuilds the Astro landing site on `main`, overlays it onto the latest published Pages snapshot, and republishes the combined result without requiring a new release tag
+  - rebuilds the Astro landing site on `main`, overlays it onto the latest published Pages snapshot, republishes the combined result after stable APT publication or website-only changes, and does not require a new release tag for landing-page-only refreshes
 - `Refresh Build and Runtime Pins`
   - refreshes the pinned Docker Go build image version and updates the pinned Docker `s6-overlay` version and checksum pins
 

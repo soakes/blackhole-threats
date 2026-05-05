@@ -209,9 +209,10 @@ automation.
   builds.
 - Release publishing is limited to trusted `v*` / `v*-rc.*` tags.
 - Signed APT repository publishing is limited to trusted stable `v*` tags.
-- The separate landing-site Pages deploy may run from `main`, but it must only
-  republish the website on top of the latest published repository snapshot; do
-  not turn `main` pushes into unsigned APT repository rebuilds.
+- The separate landing-site Pages deploy may run from `main` pushes and after
+  successful stable APT publication, but it must only republish the website on
+  top of the latest published repository snapshot; do not turn those refreshes
+  into unsigned APT repository rebuilds.
 - Release and publish tags must point to commits already contained in `main`;
   keep that verification in place.
 - Keep the scheduled toolchain/runtime refresh workflow branch-scoped and
