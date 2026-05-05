@@ -78,8 +78,62 @@ jobs:
           echo "stable_tag=${stable_tag}" >> "${GITHUB_OUTPUT}"
           echo "candidate_tag=${stable_tag}-rc.${rc_number}" >> "${GITHUB_OUTPUT}"
 
-      - name: Create and push prerelease tag
+      - name: Update Debian changelog on main
+        id: changelog
         if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin "refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}" --force
+          remote_sha="$(git rev-parse "refs/remotes/origin/${DEFAULT_BRANCH}")"
+          if [ "${remote_sha}" != "${RELEASE_SHA}" ]; then
+            echo "main has moved from ${RELEASE_SHA} to ${remote_sha}; a newer release workflow run will handle it."
+            echo "updated=true" >> "${GITHUB_OUTPUT}"
+            echo "reason=stale-main" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          bash scripts/update-debian-changelog.sh \
+            "${{ steps.candidate.outputs.stable_tag }}" \
+            "${{ steps.release.outputs.previous_tag }}" \
+            "${RELEASE_SHA}"
+
+          if git diff --quiet -- debian/changelog; then
+            echo "updated=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          if [ -z "${RELEASE_AUTOMATION_TOKEN:-}" ]; then
+            echo "RELEASE_AUTOMATION_TOKEN is required to push Debian changelog commits so follow-up validation workflows are triggered." >&2
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add debian/changelog
+          git commit -m "chore(release): update Debian changelog for ${{ steps.candidate.outputs.stable_tag }}"
+
+          if ! git push \
+            "https://x-access-token:${RELEASE_AUTOMATION_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/${DEFAULT_BRANCH}" 2>push.err; then
+            cat push.err >&2
+            if grep -Eiq 'non-fast-forward|fetch first|stale info|rejected' push.err; then
+              echo "main moved while pushing the Debian changelog update; a newer release workflow run will handle it."
+              echo "updated=true" >> "${GITHUB_OUTPUT}"
+              echo "reason=stale-main" >> "${GITHUB_OUTPUT}"
+              exit 0
+            fi
+            exit 1
+          fi
+
+          echo "updated=true" >> "${GITHUB_OUTPUT}"
+          echo "reason=pushed" >> "${GITHUB_OUTPUT}"
+
+      - name: Create and push prerelease tag
+        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true' && steps.changelog.outputs.updated != 'true'
         env:
           DEFAULT_GH_TOKEN: ${{ github.token }}
           RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
@@ -99,7 +153,7 @@ jobs:
           fi
 
       - name: Wait for prerelease publish workflows
-        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
+        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true' && steps.changelog.outputs.updated != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -108,38 +162,6 @@ jobs:
             "${RELEASE_SHA}" \
             release-assets.yml \
             container-image.yml
-
-      - name: Create and push stable tag
-        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
-        env:
-          DEFAULT_GH_TOKEN: ${{ github.token }}
-          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          push_token="${RELEASE_AUTOMATION_TOKEN:-${DEFAULT_GH_TOKEN}}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.candidate.outputs.stable_tag }}" -m "Release ${{ steps.candidate.outputs.stable_tag }}"
-          if ! git push "https://x-access-token:${push_token}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${{ steps.candidate.outputs.stable_tag }}" 2>push.err; then
-            cat push.err >&2
-            if grep -Fq "without 'workflows' permission" push.err && [ -z "${RELEASE_AUTOMATION_TOKEN:-}" ]; then
-              echo "Add a RELEASE_AUTOMATION_TOKEN secret with repository contents and workflows write access to automate release tags for commits that update workflow files." >&2
-            fi
-            exit 1
-          fi
-
-      - name: Wait for stable publish workflows
-        if: steps.existing.outputs.release_required == 'true' && steps.release.outputs.release_required == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          bash scripts/wait-for-tag-workflow-runs.sh \
-            "${{ steps.candidate.outputs.stable_tag }}" \
-            "${RELEASE_SHA}" \
-            release-assets.yml \
-            container-image.yml \
-            publish-apt-repository.yml
 
       - name: Write workflow summary
         run: |
@@ -153,7 +175,14 @@ jobs:
             exit 0
           fi
 
-          printf "Created automated release candidate \`%s\`, validated the prerelease publish path, and promoted it to stable \`%s\` (%s bump from \`%s\`).\n" \
+          if [ "${{ steps.changelog.outputs.updated }}" = "true" ]; then
+            printf "Updated \`debian/changelog\` for \`%s\` (%s); release tagging will continue after the changelog commit validates on \`main\`.\n" \
+              "${{ steps.candidate.outputs.stable_tag }}" \
+              "${{ steps.changelog.outputs.reason }}" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          printf "Created automated release candidate \`%s\` for stable target \`%s\` and validated the prerelease publish path (%s bump from \`%s\`). Promote it with the \`Promote Release Candidate\` workflow when it is ready for stable publication.\n" \
             "${{ steps.candidate.outputs.candidate_tag }}" \
             "${{ steps.candidate.outputs.stable_tag }}" \
             "${{ steps.release.outputs.bump }}" \

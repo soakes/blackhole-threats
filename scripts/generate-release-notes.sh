@@ -275,6 +275,10 @@ while IFS= read -r -d $'\036' record; do
     continue
   fi
 
+  if [[ "${subject}" =~ ^chore\(release\):[[:space:]]+update\ Debian\ changelog\ for\ v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    continue
+  fi
+
   section="maintenance"
   breaking=false
   cleaned_subject="$(clean_subject "${subject}" "${body}")"

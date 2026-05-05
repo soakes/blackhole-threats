@@ -91,6 +91,7 @@ autolabeler:
     files:
       - "scripts/next-release.sh"
       - "scripts/generate-release-notes.sh"
+      - "scripts/update-debian-changelog.sh"
       - ".github/release-drafter.yml"
       - ".github/workflows/automated-release.yml"
       - ".github/workflows/promote-release.yml"
@@ -128,6 +129,7 @@ autolabeler:
       - "debian/**/*"
       - "scripts/build-apt-repository.sh"
       - "scripts/prepare-debian-changelog.sh"
+      - "scripts/update-debian-changelog.sh"
       - ".github/workflows/publish-apt-repository.yml"
   - label: maintenance
     title:

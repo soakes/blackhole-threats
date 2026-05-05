@@ -44,6 +44,7 @@ jobs:
           bash -n scripts/generate-website-highlights.sh
           bash -n scripts/next-release.sh
           bash -n scripts/prepare-debian-changelog.sh
+          bash -n scripts/update-debian-changelog.sh
           sh -n packaging/container/rootfs/usr/local/bin/blackhole-threats-entrypoint
           sh -n packaging/container/rootfs/etc/s6-overlay/s6-rc.d/blackhole-threats/run
           sh -n packaging/container/rootfs/etc/s6-overlay/s6-rc.d/blackhole-threats/log/run

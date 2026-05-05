@@ -674,11 +674,11 @@ refresh for this repository.
 - `Container Image`
   - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms on pull requests, release tags, and manual dispatches, and only publishes `rc`, `v*-rc.*`, stable semver tags, and `latest` for release tags or explicit recovery dispatches
 - `Automated Release Candidate`
-  - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, then promotes the same commit to a stable `v*` tag and dispatches the publish workflows from the current default branch with the target tag passed explicitly
+  - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, and leaves stable publication to explicit promotion
 - `Dependabot Auto Merge`
   - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges green Dependabot PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
 - `Promote Release Candidate`
-  - provides a manual fallback path to promote a specific `v*-rc.*` tag to a stable `v*` tag if the automatic promotion path ever needs operator intervention, while honoring the optional `RELEASE_AUTOMATION_TOKEN` escape hatch for workflow-touching release commits
+  - promotes a specific `v*-rc.*` tag to a stable `v*` tag when a maintainer is ready to publish stable assets, containers, and the signed APT repository, while honoring the optional `RELEASE_AUTOMATION_TOKEN` escape hatch for workflow-touching release commits
 - `Release Drafter`
   - keeps a curated draft release updated on `main` when there is at least one release-bearing change queued, removes stale automated drafts when there are no release-bearing changes left, applies release-note labels to pull requests, and groups merged work into cleaner operator-facing sections
 - `Release Assets`
@@ -708,7 +708,7 @@ refresh for this repository.
   publisher or release publisher
 - `main` is treated as release-candidate-ready: each merge to `main` can become
   the next automated `v*-rc.*` tag, but stable `latest` publication only
-  happens after the prerelease publish path passes
+  happens after a maintainer promotes an RC
 - `main` pushes also refresh the public GitHub Pages landing site, but they do
   so by overlaying the website onto the latest published repository snapshot
   rather than by rebuilding or resigning the APT repo
@@ -918,9 +918,8 @@ make package
   most obvious ones automatically
 - include a meaningful commit body when the change affects operators,
   packaging, release flow, or security posture
-- assume merged `main` commits are eligible for automated RC tagging, release
-  artifact publication, and potentially stable promotion once the prerelease
-  publish path passes
+- assume merged `main` commits are eligible for automated RC tagging and
+  prerelease artifact publication
 - use a release-bearing type when the change should publish artifacts;
   `docs`, `ci`, `chore`, `test`, and `refactor` do not cut a release by
   default

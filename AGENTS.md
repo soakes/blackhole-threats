@@ -118,10 +118,20 @@ automation.
   non-dbgsym Debian packages, `sha256sums.txt`, and the Debian source package
   trio, but do not attach maintainer-oriented byproducts such as `-dbgsym`,
   `.buildinfo`, `.changes`, or a duplicate `release-notes.md` asset.
-- `main` auto-cuts release candidates after `Build and Validate` succeeds,
-  then promotes the same commit to a stable tag only after the prerelease asset
-  and container publish paths pass. Keep `main` releasable enough for that
-  automation.
+- `main` auto-cuts release candidates after `Build and Validate` succeeds and
+  validates the prerelease asset and container publish paths. Stable promotion
+  is an explicit operator step through the `Promote Release Candidate` workflow.
+  Keep `main` releasable enough for that automation.
+- The checked-in `debian/changelog` must track the latest stable package
+  version present on `main`. Automated release runs update it with
+  `scripts/update-debian-changelog.sh` on a `chore(release): update Debian
+  changelog for vX.Y.Z` commit before tagging, then wait for the changelog
+  commit to pass `Build and Validate`.
+- Because automated release candidates and their matching stable releases point
+  at the same commit, the source changelog records the stable Debian version
+  such as `1.2.3-1`; release artifact jobs may still rewrite the build-local
+  changelog to `1.2.3~rc.N-1` through `scripts/prepare-debian-changelog.sh`
+  when building RC packages.
 - Release-note formatting is driven by `.github/release-drafter.yml`, the
   repository label catalog in `.github/repository-labels.json`, and the
   `Release Drafter` workflow. Keep those aligned when labels, categories, or
@@ -225,11 +235,10 @@ automation.
   need to merge automatically, the supported exception is an optional
   `DEPENDABOT_AUTOMERGE_TOKEN` with the minimum extra workflow permission needed
   for that class of PR.
-- Prefer the repo-scoped `GITHUB_TOKEN` for automated release tagging under the
-  current repository settings. If release-bearing commits that modify
-  `.github/workflows/` also need to auto-promote from RC to stable, the
-  supported exception is an optional `RELEASE_AUTOMATION_TOKEN` with the
-  minimum extra workflow permission needed for those tag pushes.
+- Automated releases may need `RELEASE_AUTOMATION_TOKEN` to push the generated
+  `debian/changelog` commit and then tag the validated follow-up commit. Keep
+  that token scoped to the minimum repository contents and workflow permission
+  needed for release automation; do not introduce broader personal tokens.
 - If you change workflow behavior, update the README CI/CD, APT repository, or
   contribution sections in the same change when operator behavior changes.
 
@@ -299,8 +308,7 @@ automation.
   a squash merge to keep them separate.
 - Treat `main` as release-candidate-ready: after `Build and Validate` passes
   for a push to `main`, the release workflow can automatically create the next
-  `v*-rc.*` tag from merged commit history, run the prerelease publish path,
-  and then promote the same commit to a stable `v*` tag if those checks pass.
+  `v*-rc.*` tag from merged commit history and run the prerelease publish path.
   Do not merge partial work to `main` that should not become a published
   prerelease.
 - Unless the user explicitly asks for a stable release or promotion, default to

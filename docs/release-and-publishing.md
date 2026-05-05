@@ -13,13 +13,12 @@ See also:
 The repository is designed so that `main` is release-candidate-ready.
 
 That means a successful validation run for a push to `main` can trigger the
-entire release path automatically:
+release-candidate path automatically:
 
 1. compute the next semantic version
 2. create a prerelease tag `v<major>.<minor>.<patch>-rc.<n>`
 3. validate prerelease asset and container publication
-4. promote the same commit to a stable tag `v<major>.<minor>.<patch>`
-5. publish stable assets, containers, and the signed APT repository
+4. leave stable promotion to an explicit maintainer action
 
 ## Workflow Map
 
@@ -50,12 +49,14 @@ Behavior:
 - checks whether `HEAD` already carries a release tag
 - runs `scripts/next-release.sh`
 - skips tagging if no release-bearing commits are queued
+- updates `debian/changelog` for the next stable Debian package version when
+  needed, pushes that changelog commit, and waits for the follow-up validation
+  run before tagging
 - creates the next `-rc` tag when a release is required
 - dispatches `container-image.yml` and `release-assets.yml` from the current
   default branch with the target tag passed explicitly
 - waits for those prerelease publish paths to succeed
-- creates the stable tag from the same commit
-- dispatches the stable publish workflows
+- stops before stable promotion
 
 Recovery path:
 
@@ -63,9 +64,13 @@ Recovery path:
   from the current default branch and set `release_ref` to the existing tag
   rather than re-running an old tag-pinned workflow definition
 
-Important consequence:
+Important consequences:
 
-- if the prerelease publish path fails, stable promotion does not happen
+- stable tags are created by the `Promote Release Candidate` workflow after a
+  maintainer chooses the RC to promote
+- release candidates and their matching stable releases point at the same
+  commit, so the checked-in changelog records the stable package version while
+  RC package builds rewrite their build-local changelog version to `~rc.N`
 
 ### Release Drafter
 
@@ -192,8 +197,9 @@ Current behavior:
   commits under `.github/workflows/` need the extra workflow permission that
   GitHub requires for automated tag pushes
 
-Operationally, this means passing dependency updates can flow all the way from
-PR to RC to stable publication without manual intervention.
+Operationally, this means passing dependency updates can flow from PR to a
+published RC without manual intervention. Stable publication stays a deliberate
+maintainer action.
 
 ## Trust Boundaries
 
@@ -215,11 +221,11 @@ Automation is the default, but a maintainer still steps in when:
 - `Build and Validate` fails on `main`
 - a release-bearing commit updates `.github/workflows/` and
   `RELEASE_AUTOMATION_TOKEN` is not configured, so GitHub blocks the automated
-  RC or stable tag push
+  RC tag push
 - prerelease asset publication fails
 - container publication fails
 - APT signing or Pages publication fails
-- a recovery promotion is needed via the manual promotion workflow
+- a stable promotion is needed via the manual promotion workflow
 - a dependency update stays red and should not merge automatically
 
 ## What Does Not Create A Release
