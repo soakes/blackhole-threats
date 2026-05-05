@@ -1,0 +1,12 @@
+{
+  "site_url": "https://soakes.github.io/blackhole-threats/",
+  "release_version": "v1.1.2",
+  "commit": "fbb3936c8f57953f709a76cff2fd0653c5a2ab0d",
+  "build_date": "2026-05-05T10:23:26Z",
+  "apt_fingerprint": "C578 26C0 5CD8 943F 7E33 46A8 9DEB A2D2 B18C 8A1D",
+  "release_highlights": [
+    "Make changelog updates part of RC flow",
+    "Keep Pages release highlights current",
+    "Clean generated changelog bullets"
+  ]
+}
