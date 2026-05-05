@@ -7,13 +7,46 @@ const fallbackHighlights = [
   'Export concise BGP route deltas',
 ];
 
+function normalizeHighlights(value) {
+  if (!Array.isArray(value)) {
+    return fallbackHighlights;
+  }
+
+  const highlights = value
+    .map((item) => `${item ?? ''}`.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+  return highlights.length > 0 ? highlights : fallbackHighlights;
+}
+
+function parseBuildHighlights(value) {
+  try {
+    return normalizeHighlights(JSON.parse(value || '[]'));
+  } catch {
+    return fallbackHighlights;
+  }
+}
+
+function hasBuildHighlights(value) {
+  try {
+    const parsed = JSON.parse(value || '[]');
+    return Array.isArray(parsed) && parsed.some((item) => `${item ?? ''}`.trim() !== '');
+  } catch {
+    return false;
+  }
+}
+
+const buildHighlightsValue = process.env.PUBLIC_RELEASE_HIGHLIGHTS_JSON;
+const hasExplicitBuildHighlights = hasBuildHighlights(buildHighlightsValue);
+
 const defaultMetadata = {
   siteUrl: process.env.PUBLIC_SITE_URL.replace(/\/?$/, '/'),
   releaseVersion: process.env.PUBLIC_RELEASE_VERSION,
   commit: process.env.PUBLIC_COMMIT,
   buildDate: process.env.PUBLIC_BUILD_DATE,
   aptFingerprint: process.env.PUBLIC_APT_FINGERPRINT,
-  releaseHighlights: fallbackHighlights,
+  releaseHighlights: parseBuildHighlights(buildHighlightsValue),
 };
 
 function formatBuildDate(value) {
@@ -27,17 +60,26 @@ function formatBuildDate(value) {
       }).format(parsedBuildDate)} UTC`;
 }
 
-function normalizeHighlights(value) {
-  if (!Array.isArray(value)) {
-    return fallbackHighlights;
+function parseStableTag(value) {
+  const match = `${value}`.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+  return match ? match.slice(1).map((part) => Number.parseInt(part, 10)) : null;
+}
+
+function compareStableTags(left, right) {
+  const leftParts = parseStableTag(left);
+  const rightParts = parseStableTag(right);
+
+  if (!leftParts || !rightParts) {
+    return 0;
   }
 
-  const highlights = value
-    .map((item) => `${item ?? ''}`.trim())
-    .filter(Boolean)
-    .slice(0, 3);
+  for (let index = 0; index < leftParts.length; index += 1) {
+    if (leftParts[index] !== rightParts[index]) {
+      return leftParts[index] - rightParts[index];
+    }
+  }
 
-  return highlights.length > 0 ? highlights : fallbackHighlights;
+  return 0;
 }
 
 function normalizeMetadata(value = {}) {
@@ -56,6 +98,28 @@ function normalizeMetadata(value = {}) {
     aptFingerprint,
     releaseHighlights: normalizeHighlights(value.release_highlights || value.releaseHighlights),
   };
+}
+
+function shouldRenderFetchedMetadata(metadata) {
+  if (parseStableTag(defaultMetadata.releaseVersion) && !parseStableTag(metadata.releaseVersion)) {
+    return false;
+  }
+
+  return compareStableTags(metadata.releaseVersion, defaultMetadata.releaseVersion) >= 0;
+}
+
+function mergeFetchedMetadata(metadata) {
+  if (
+    hasExplicitBuildHighlights &&
+    metadata.releaseVersion === defaultMetadata.releaseVersion
+  ) {
+    return {
+      ...metadata,
+      releaseHighlights: defaultMetadata.releaseHighlights,
+    };
+  }
+
+  return metadata;
 }
 
 function renderMetadata(metadata) {
@@ -128,7 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then((metadata) => {
       if (metadata) {
-        renderMetadata(normalizeMetadata(metadata));
+        const normalizedMetadata = normalizeMetadata(metadata);
+        if (shouldRenderFetchedMetadata(normalizedMetadata)) {
+          renderMetadata(mergeFetchedMetadata(normalizedMetadata));
+        }
       }
     })
     .catch(() => {

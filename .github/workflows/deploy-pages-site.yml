@@ -102,6 +102,7 @@ jobs:
           test -f site/blackhole-threats-archive-keyring.fingerprint.txt
 
       - name: Refresh published website metadata
+        id: website_metadata
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -127,6 +128,8 @@ jobs:
               release_highlights: $release_highlights
             }' > site/website-metadata.json
 
+          echo "release_highlights_json=${highlights_json}" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -135,6 +138,8 @@ jobs:
           cache-dependency-path: ${{ env.WEBSITE_DIR }}/package-lock.json
 
       - name: Build landing site
+        env:
+          PUBLIC_RELEASE_HIGHLIGHTS_JSON: ${{ steps.website_metadata.outputs.release_highlights_json }}
         run: |
           npm ci --prefix "${WEBSITE_DIR}"
           make website-build \

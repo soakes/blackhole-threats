@@ -34,6 +34,7 @@ const requiredEnvBindings = [
   "process.env.PUBLIC_COMMIT",
   "process.env.PUBLIC_BUILD_DATE",
   "process.env.PUBLIC_APT_FINGERPRINT",
+  "process.env.PUBLIC_RELEASE_HIGHLIGHTS_JSON",
 ];
 
 const errors = [];

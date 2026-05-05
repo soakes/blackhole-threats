@@ -7,6 +7,7 @@ export default defineConfig({
     'process.env.PUBLIC_RELEASE_VERSION': JSON.stringify(process.env.PUBLIC_RELEASE_VERSION || 'dev'),
     'process.env.PUBLIC_COMMIT': JSON.stringify(process.env.PUBLIC_COMMIT || 'local'),
     'process.env.PUBLIC_BUILD_DATE': JSON.stringify(process.env.PUBLIC_BUILD_DATE || new Date().toISOString()),
-    'process.env.PUBLIC_APT_FINGERPRINT': JSON.stringify(process.env.PUBLIC_APT_FINGERPRINT || 'Published alongside stable signed releases.')
+    'process.env.PUBLIC_APT_FINGERPRINT': JSON.stringify(process.env.PUBLIC_APT_FINGERPRINT || 'Published alongside stable signed releases.'),
+    'process.env.PUBLIC_RELEASE_HIGHLIGHTS_JSON': JSON.stringify(process.env.PUBLIC_RELEASE_HIGHLIGHTS_JSON || '[]')
   }
 });
