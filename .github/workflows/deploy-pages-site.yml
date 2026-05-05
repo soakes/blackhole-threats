@@ -61,16 +61,17 @@ jobs:
             --json databaseId,headBranch,headSha,createdAt)"
 
           run_id="$(printf '%s' "${run_json}" | jq -r '.[0].databaseId // empty')"
-          stable_tag="$(
-            git for-each-ref --sort=-v:refname --format='%(refname:short)' refs/tags/v* \
-              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
-              | head -n1 || true
-          )"
+          stable_tag="$(printf '%s' "${run_json}" | jq -r '.[0].headBranch // empty')"
+          test -n "${run_id}"
+          test -n "${stable_tag}"
+          if ! [[ "${stable_tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "latest successful APT repository publish was not a stable tag: ${stable_tag}" >&2
+            exit 1
+          fi
+
           stable_sha="$(git rev-list -n1 "${stable_tag}")"
           stable_build_date="$(gh release view "${stable_tag}" --json publishedAt --jq .publishedAt)"
 
-          test -n "${run_id}"
-          test -n "${stable_tag}"
           test -n "${stable_sha}"
           test -n "${stable_build_date}"
 
