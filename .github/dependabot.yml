@@ -50,3 +50,20 @@ updates:
     labels:
       - dependencies
       - docker
+
+  - package-ecosystem: npm
+    directory: /.github/assets/website
+    open-pull-requests-limit: 10
+    schedule:
+      interval: daily
+    allow:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - dependencies
+      - website

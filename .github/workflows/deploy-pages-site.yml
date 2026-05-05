@@ -13,6 +13,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  WEBSITE_DIR: .github/assets/website
+
 jobs:
   build:
     name: Build Pages Site
@@ -128,18 +131,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: website/package-lock.json
+          cache-dependency-path: ${{ env.WEBSITE_DIR }}/package-lock.json
 
       - name: Build landing site
         run: |
-          npm ci --prefix website
+          npm ci --prefix "${WEBSITE_DIR}"
           make website-build \
+            WEBSITE_DIR="${WEBSITE_DIR}" \
             SITE_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ \
             SITE_RELEASE_VERSION="${{ steps.published.outputs.stable_tag }}" \
             SITE_COMMIT="${{ steps.published.outputs.stable_sha }}" \
             SITE_BUILD_DATE="${{ steps.published.outputs.stable_build_date }}" \
             SITE_APT_FINGERPRINT="$(jq -r '.apt_fingerprint' site/website-metadata.json)"
-          cp -a website/dist/. site/
+          cp -a "${WEBSITE_DIR}/dist/." site/
           test -f site/index.html
           test -f site/dists/stable/InRelease
           test -f site/website-metadata.json

@@ -14,6 +14,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  WEBSITE_DIR: .github/assets/website
+
 jobs:
   quality:
     name: Quality
@@ -51,13 +54,14 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: website/package-lock.json
+          cache-dependency-path: ${{ env.WEBSITE_DIR }}/package-lock.json
 
       - name: Validate GitHub Pages website
         run: |
-          npm ci --prefix website
-          npm --prefix website run check
+          npm ci --prefix "${WEBSITE_DIR}"
+          npm --prefix "${WEBSITE_DIR}" run check
           make website-build \
+            WEBSITE_DIR="${WEBSITE_DIR}" \
             SITE_URL=https://soakes.github.io/blackhole-threats/ \
             SITE_RELEASE_VERSION="0.0.0-ci.${GITHUB_RUN_NUMBER}" \
             SITE_COMMIT="${GITHUB_SHA}" \

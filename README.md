@@ -642,8 +642,9 @@ sudo apt install blackhole-threats
 - The full archive key fingerprint is published alongside the repository for
   out-of-band verification
 - Packages are hosted through GitHub Pages rather than the GitHub Releases asset listing
-- The landing page at the repository root is built from `website/` and deployed
-  together with the signed package indexes
+- The landing page at the repository root is built from
+  `.github/assets/website/` and deployed together with the signed package
+  indexes
 - Website-only changes can refresh the Pages landing site from `main` without
   cutting a new release; that deploy path reuses the latest published
   repository snapshot so the signed APT content remains intact
@@ -753,6 +754,8 @@ refresh for this repository.
 ```text
 blackhole-threats/
 ├── .github/
+│   ├── assets/
+│   │   └── website/
 │   ├── dependabot.yml
 │   ├── release-drafter.yml
 │   ├── repository-labels.json
@@ -791,8 +794,6 @@ blackhole-threats/
 │   └── container/
 ├── scripts/
 │   └── build-apt-repository.sh
-├── website/
-│   └── src/
 ├── Dockerfile
 ├── Makefile
 ├── go.mod
@@ -816,7 +817,7 @@ blackhole-threats/
 - `docs`
   - longer-form operator and maintainer guides, including operations, config
     reference, release flow, deployment examples, and troubleshooting
-- `website`
+- `.github/assets/website`
   - Vite source for the GitHub Pages landing site that fronts the signed APT repository
 
 ---

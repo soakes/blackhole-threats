@@ -21,6 +21,7 @@ permissions:
 env:
   CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
   RELEASE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}
+  WEBSITE_DIR: .github/assets/website
 
 jobs:
   verify-release-tag:
@@ -218,18 +219,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: website/package-lock.json
+          cache-dependency-path: ${{ env.WEBSITE_DIR }}/package-lock.json
 
       - name: Build GitHub Pages landing site
         run: |
-          npm ci --prefix website
+          npm ci --prefix "${WEBSITE_DIR}"
           make website-build \
+            WEBSITE_DIR="${WEBSITE_DIR}" \
             SITE_URL=${{ steps.meta.outputs.site_url }} \
             SITE_RELEASE_VERSION=${{ steps.meta.outputs.version }} \
             SITE_COMMIT=${{ steps.meta.outputs.commit }} \
             SITE_BUILD_DATE=${{ steps.meta.outputs.build_date }} \
             SITE_APT_FINGERPRINT="${{ steps.signing.outputs.pretty_fingerprint }}"
-          cp -a website/dist/. site/
+          cp -a "${WEBSITE_DIR}/dist/." site/
 
       - name: Generate website metadata
         env:

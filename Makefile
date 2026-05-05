@@ -11,6 +11,7 @@ SITE_RELEASE_VERSION ?= $(VERSION)
 SITE_COMMIT ?= $(COMMIT)
 SITE_BUILD_DATE ?= $(BUILD_DATE)
 SITE_APT_FINGERPRINT ?= Published alongside stable release builds.
+WEBSITE_DIR ?= .github/assets/website
 LDFLAGS ?= -s -w \
 	-X $(PKG)/internal/buildinfo.Version=$(VERSION) \
 	-X $(PKG)/internal/buildinfo.Commit=$(COMMIT) \
@@ -55,7 +56,7 @@ website-build:
 	PUBLIC_COMMIT=$(SITE_COMMIT) \
 	PUBLIC_BUILD_DATE=$(SITE_BUILD_DATE) \
 	PUBLIC_APT_FINGERPRINT='$(SITE_APT_FINGERPRINT)' \
-	npm --prefix website run build
+	npm --prefix $(WEBSITE_DIR) run build
 
 clean:
 	rm -rf _build dist
