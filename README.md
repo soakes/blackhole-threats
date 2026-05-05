@@ -70,7 +70,7 @@ examples live under [`docs/`](docs/README.md).
 
 1. Copy [`examples/blackhole-threats.yaml`](examples/blackhole-threats.yaml) and replace the local ASN, router ID, peers, and feed communities for your network.
 2. Validate the file with `./dist/blackhole-threats -conf /path/to/blackhole-threats.yaml -check-config`.
-3. Use `-once` with an unprivileged BGP port for a first smoke test before binding to production port `179`.
+3. Use `-once` with an unprivileged local BGP port for a first smoke test before binding to production port `179`.
 4. Start the daemon and inspect the startup logs for `tag_version`, `local_as`, `router_id`, `peer_count`, and the first `Refresh completed` line.
 5. Only enable automatic service startup after the one-shot validation path looks correct.
 
@@ -256,6 +256,11 @@ feeds:
 - Each community component must fit in the range `0-65535`
 - Local file paths are supported as feed URLs
 - The refresh timer defaults to `2h`
+- BGP port settings are optional; GoBGP uses standard port `179` when they are
+  omitted
+- `gobgp.global.config.port` optionally changes the local BGP listen port
+- `gobgp.neighbors[].config.port` optionally changes the remote TCP port for a
+  peer
 - The sample config uses RFC 5737 IPv4 and RFC 3849 IPv6 documentation
   addresses; replace them with your real router ID and peer addresses
 
@@ -407,7 +412,9 @@ Run a single refresh cycle and exit:
 ```
 
 For unprivileged smoke tests, use a temporary config with
-`gobgp.global.config.port` set to a high port such as `1179`.
+`gobgp.global.config.port` set to a high local listen port such as `1179`.
+Peer endpoint ports are optional; omit `gobgp.neighbors[].config.port` unless
+that peer also listens on a non-standard port.
 
 Add an extra feed without editing the YAML file:
 

@@ -27,7 +27,8 @@ Type: upstream GoBGP `oc.BgpConfigSet`
 
 This project passes the `gobgp` block into the embedded GoBGP server largely
 as-is. The repo does not redefine the entire GoBGP schema in local code, but
-it does enforce two startup requirements:
+it does provide a small per-neighbor port shorthand and enforce two startup
+requirements:
 
 - `gobgp.global.config.as` must be non-zero
 - `gobgp.global.config.routerid` must be a valid IPv4 address
@@ -49,10 +50,30 @@ gobgp:
 Operational notes:
 
 - The router ID must be IPv4 even if you also peer over IPv6.
-- Neighbor configuration belongs to the GoBGP schema, not a custom local
-  wrapper.
-- For lab validation, use a high port such as `1179` under
-  `gobgp.global.config.port`.
+- BGP port settings are optional. If omitted, GoBGP uses standard BGP port
+  `179`.
+- `gobgp.global.config.port` optionally changes the local BGP listen port.
+- `gobgp.neighbors[].config.port` optionally changes the remote TCP port used
+  when dialing that peer.
+- The neighbor `config.port` shorthand maps to GoBGP
+  `transport.config.remoteport`; raw `remoteport` and `remote-port` spellings
+  are also accepted under the transport block for this field.
+
+Example with separate local and remote lab ports:
+
+```yaml
+gobgp:
+  global:
+    config:
+      as: 64520
+      routerid: "198.51.100.10"
+      port: 1179
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64520
+        port: 2179
+```
 
 ### `feeds`
 
@@ -128,6 +149,7 @@ gobgp:
     - config:
         neighboraddress: "198.51.100.1"
         peeras: 64520
+        port: 1179
 
 feeds:
   - url: https://team-cymru.org/Services/Bogons/fullbogons-ipv4.txt
@@ -135,7 +157,8 @@ feeds:
 
 This example is suitable for validation and one-shot smoke tests. Because the
 feed omits `community`, the route set will use the default community
-`64520:666`.
+`64520:666`. The neighbor `port` line is optional and should only be set when
+the peer listens on a non-standard BGP port.
 
 ## Full Reference Example
 
@@ -240,6 +263,7 @@ Startup validation fails for:
 - unknown YAML keys
 - local ASN `0`
 - invalid or non-IPv4 router IDs
+- invalid or conflicting neighbor endpoint ports
 - empty feed URLs
 - unsupported feed schemes
 - malformed communities

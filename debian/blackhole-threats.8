@@ -116,6 +116,10 @@ blackhole-threats -conf /tmp/blackhole-threats.yaml -once
 .EE
 .RE
 .PP
+Port settings are optional. Set gobgp.global.config.port for the local listener
+and gobgp.neighbors[].config.port only for remote peer endpoints that do not
+listen on standard BGP port 179.
+.PP
 Trigger an immediate refresh for the packaged systemd service:
 .PP
 .RS

@@ -26,11 +26,15 @@ gobgp:
     - config:
         neighboraddress: "198.51.100.1"
         peeras: 64520
+        port: 1179
 
 feeds:
   - url: https://team-cymru.org/Services/Bogons/fullbogons-ipv4.txt
     community: 64520:1101
 ```
+
+The peer `port` line is optional; keep it only when the lab peer listens on a
+non-standard BGP port. Omitted local or peer ports use standard BGP port `179`.
 
 ### Commands
 
@@ -44,6 +48,7 @@ Use this when you want to prove:
 
 - the YAML is valid
 - feeds are reachable
+- local and remote BGP endpoints are using the expected lab ports
 - the route table can be built
 - the process can complete one full cycle cleanly
 

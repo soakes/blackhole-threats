@@ -113,3 +113,154 @@ unexpected: true
 		t.Fatal("Load() error = nil, want unknown-key parse failure")
 	}
 }
+
+func TestLoadRejectsUnknownNestedKeys(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "blackhole-threats.yaml")
+	content := []byte(`
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.0.2.1"
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64512
+        unexpected: true
+`)
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	if _, err := Load(path); err == nil {
+		t.Fatal("Load() error = nil, want nested unknown-key parse failure")
+	}
+}
+
+func TestLoadMapsNeighborConfigPortToTransportRemotePort(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "blackhole-threats.yaml")
+	content := []byte(`
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.0.2.1"
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64512
+        port: 1179
+feeds:
+  - url: https://example.com/feed.txt
+`)
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if got := cfg.GoBGP.Neighbors[0].Transport.Config.RemotePort; got != 1179 {
+		t.Fatalf("neighbor remote port = %d, want %d", got, 1179)
+	}
+}
+
+func TestLoadAcceptsHyphenatedNeighborRemotePort(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "blackhole-threats.yaml")
+	content := []byte(`
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.0.2.1"
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64512
+      transport:
+        config:
+          remote-port: 1179
+feeds:
+  - url: https://example.com/feed.txt
+`)
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if got := cfg.GoBGP.Neighbors[0].Transport.Config.RemotePort; got != 1179 {
+		t.Fatalf("neighbor remote port = %d, want %d", got, 1179)
+	}
+}
+
+func TestLoadRejectsInvalidNeighborConfigPort(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "blackhole-threats.yaml")
+	content := []byte(`
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.0.2.1"
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64512
+        port: 70000
+`)
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	_, err := Load(path)
+	if !errors.Is(err, ErrInvalidNeighborPort) {
+		t.Fatalf("Load() error = %v, want ErrInvalidNeighborPort", err)
+	}
+}
+
+func TestLoadRejectsConflictingNeighborPorts(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "blackhole-threats.yaml")
+	content := []byte(`
+gobgp:
+  global:
+    config:
+      as: 64512
+      routerid: "192.0.2.1"
+  neighbors:
+    - config:
+        neighboraddress: "198.51.100.1"
+        peeras: 64512
+        port: 1179
+      transport:
+        config:
+          remoteport: 1180
+`)
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+
+	_, err := Load(path)
+	if !errors.Is(err, ErrConflictingNeighborPort) {
+		t.Fatalf("Load() error = %v, want ErrConflictingNeighborPort", err)
+	}
+}

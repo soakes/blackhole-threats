@@ -39,7 +39,10 @@ Two operational details matter most:
    ./dist/blackhole-threats -conf /path/to/blackhole-threats.yaml -check-config
    ```
 
-4. Run a one-shot smoke test with an unprivileged BGP port such as `1179`.
+4. Run a one-shot smoke test with an unprivileged local BGP port such as
+   `1179`. Port settings are optional; set `gobgp.global.config.port` for the
+   local listener and only set `gobgp.neighbors[].config.port` for peer
+   endpoints that are not using `179`.
 5. Confirm the startup logs show the expected `local_as`, `router_id`,
    `peer_count`, and `default_community`.
 6. Only then bind to production port `179` and enable long-running service
@@ -213,7 +216,8 @@ the normal cadence once the issue is understood. The repo default is `2h`.
 - Keep feeds that should fail independently in separate communities.
 - Avoid grouping unrelated feeds under one community unless the shared
   carry-forward behavior is intentional.
-- Use `-once` before first binding to BGP port `179`.
+- Use `-once` before first binding to BGP port `179`, and verify any
+  per-neighbor `config.port` overrides before production rollout.
 - Prefer a restart after config edits; `SIGUSR1` is for feed refresh only.
 - Watch route counts after major feed changes to catch accidental
   over-summarisation or unexpected source content.

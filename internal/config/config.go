@@ -20,6 +20,8 @@ var ErrInvalidLocalASN = errors.New("invalid local ASN")
 var ErrInvalidRouterID = errors.New("invalid router ID")
 var ErrMissingFeedURL = errors.New("missing feed URL")
 var ErrUnsupportedFeedScheme = errors.New("unsupported feed scheme")
+var ErrInvalidNeighborPort = errors.New("invalid neighbor endpoint port")
+var ErrConflictingNeighborPort = errors.New("conflicting neighbor endpoint port")
 
 type Community uint32
 
@@ -99,7 +101,12 @@ func Load(path string) (File, error) {
 		return File{}, fmt.Errorf("read config %q: %w", path, err)
 	}
 
-	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	normalized, err := normalizeNeighborEndpointPorts(data)
+	if err != nil {
+		return File{}, fmt.Errorf("parse config %q: %w", path, err)
+	}
+
+	decoder := yaml.NewDecoder(bytes.NewReader(normalized))
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&cfg); err != nil {
 		return File{}, fmt.Errorf("parse config %q: %w", path, err)

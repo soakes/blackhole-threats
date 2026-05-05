@@ -10,6 +10,9 @@ gobgp:
     - config:
         neighboraddress: "198.51.100.1"
         peeras: 64520
+        # Optional: connect to this peer on a non-default TCP port.
+        # Omit this line to use standard BGP port 179.
+        # port: 1179
     - config:
         neighboraddress: "198.51.100.2"
         peeras: 64520

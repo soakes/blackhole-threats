@@ -95,6 +95,8 @@ Checks:
 
 - confirm the BGP session is actually established
 - verify the router ID and ASN are correct
+- if using non-standard BGP ports, verify `gobgp.global.config.port` for the
+  local listener and `gobgp.neighbors[].config.port` for the remote peer
 - confirm the downstream router policy matches the selected communities
 - run with `-log-level debug` or `-debug`
 - verify the feeds produced usable prefixes
