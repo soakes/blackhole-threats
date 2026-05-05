@@ -113,6 +113,7 @@ trap 'rm -f "${notes_file}" "${tmpfile}"' EXIT
 
 while IFS= read -r -d $'\036' subject; do
   [ -n "${subject}" ] || continue
+  subject="${subject#$'\n'}"
   subject="$(printf '%s' "${subject}" | trim)"
   [ -n "${subject}" ] || continue
 
