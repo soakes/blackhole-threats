@@ -194,19 +194,19 @@ If you see a non-empty draft for a tag that should already be published:
   tag too; a stable release is not fully healthy until all three publish paths
   agree
 
-## A Dependabot PR Did Not Merge Automatically
+## An Automation PR Did Not Merge Automatically
 
 Checks:
 
 - confirm `Build and Validate` succeeded on the PR head revision
 - confirm the PR is still open and not in draft state
-- confirm it is authored by `dependabot[bot]`
+- confirm it is authored by `dependabot[bot]` or `github-actions[bot]`
 - confirm there are no merge conflicts
 - confirm branch protection still allows squash merge after checks pass
 - if GitHub says to add `--auto`, confirm the workflow enabled auto-merge and
   let GitHub finish the merge after the remaining requirements settle
 - if the PR changes files under `.github/workflows/`, confirm the optional
-  `DEPENDABOT_AUTOMERGE_TOKEN` secret exists with repository contents, pull
+  `AUTOMATION_AUTOMERGE_TOKEN` secret exists with repository contents, pull
   requests, and workflows write access; the default `GITHUB_TOKEN` cannot
   merge workflow-file PRs under GitHub's workflow-permission rules
 

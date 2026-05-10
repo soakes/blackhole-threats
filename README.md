@@ -675,8 +675,8 @@ refresh for this repository.
   - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms on pull requests, release tags, and manual dispatches, and only publishes `rc`, `v*-rc.*`, stable semver tags, and `latest` for release tags or explicit recovery dispatches
 - `Automated Release Candidate`
   - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, and leaves stable publication to explicit promotion
-- `Dependabot Auto Merge`
-  - runs after `Build and Validate` succeeds for Dependabot pull requests, attempts an approval when repository policy allows it, squash-merges green Dependabot PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the Dependabot conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
+- `Automation Auto Merge`
+  - runs after `Build and Validate` succeeds for Dependabot pull requests and the scheduled build/runtime pin refresh PR, attempts an approval when repository policy allows it, squash-merges green automation PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the pull request conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
 - `Promote Release Candidate`
   - promotes a specific `v*-rc.*` tag to a stable `v*` tag when a maintainer is ready to publish stable assets, containers, and the signed APT repository, while honoring the optional `RELEASE_AUTOMATION_TOKEN` escape hatch for workflow-touching release commits
 - `Release Drafter`
@@ -693,14 +693,15 @@ refresh for this repository.
 ### Automated Updates
 
 - Dependabot checks GitHub Actions, Go modules, and Docker base images daily
-- Dependabot pull requests that pass `Build and Validate` can be merged
-  automatically by the dedicated merge workflow
+- Dependabot pull requests and the scheduled build/runtime pin refresh PR can
+  be merged automatically after they pass `Build and Validate`
 - all semver version updates, including major bumps, stay eligible for
   Dependabot auto-merge; the repo keeps ecosystem PRs separate and raises the
   open-PR limit so a broken major update does not block newer updates from
   being proposed
 - The scheduled refresh workflow updates the pinned Docker Go build image
-  version and the pinned Docker `s6-overlay` release metadata
+  version and the pinned Docker `s6-overlay` release metadata, then dispatches
+  validation for the generated pull request
 
 ### Public Repository Hardening
 
@@ -715,14 +716,14 @@ refresh for this repository.
 - automated version bumps use `feat` for minor releases, `fix`/`perf`/`revert`/
   `container`/`build`/`deps`/`packaging` for patch releases, and
   `BREAKING CHANGE:` or `type!:` for major releases
-- the Dependabot merge workflow preserves the pull request title as the squash
+- the automation merge workflow preserves the pull request title as the squash
   commit subject, so release-bearing Dependabot updates such as `deps:` and
   `container:` continue into the automated release flow after merge, while
-  `ci:` updates stay non-release-bearing by design
+  `ci:` and `chore:` updates stay non-release-bearing by design
 - Dependabot semver labels such as `major`, `minor`, and `patch` are kept in
   the repository label catalog so failing update PRs are easier to triage
-- the Dependabot merge workflow uses the repo-scoped `GITHUB_TOKEN` by default
-  and only needs an optional `DEPENDABOT_AUTOMERGE_TOKEN` when GitHub policy
+- the automation merge workflow uses the repo-scoped `GITHUB_TOKEN` by default
+  and only needs an optional `AUTOMATION_AUTOMERGE_TOKEN` when GitHub policy
   blocks workflow-file pull requests from being merged by the default token
 - the release workflows use the repo-scoped `GITHUB_TOKEN` by default and only
   need an optional `RELEASE_AUTOMATION_TOKEN` when a release-bearing commit
@@ -763,7 +764,7 @@ blackhole-threats/
 │       ├── automated-release.yml
 │       ├── build-and-validate.yml
 │       ├── container-image.yml
-│       ├── dependabot-auto-merge.yml
+│       ├── automation-auto-merge.yml
 │       ├── deploy-pages-site.yml
 │       ├── promote-release.yml
 │       ├── publish-apt-repository.yml

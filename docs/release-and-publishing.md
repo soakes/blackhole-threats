@@ -172,25 +172,27 @@ These types do not cut a release by default:
 - `test:`
 - `refactor:`
 
-## Dependabot Path
+## Automation Update Path
 
-Dependabot updates are part of the normal automation path.
+Dependabot updates and scheduled build/runtime pin refreshes are part of the
+normal automation path.
 
 Current behavior:
 
-- Dependabot PRs run through `Build and Validate`
-- green PRs can be merged directly by the dedicated Dependabot merge workflow
+- Dependabot PRs and scheduled build/runtime pin refresh PRs run through
+  `Build and Validate`
+- green PRs can be merged directly by the dedicated automation merge workflow
 - when GitHub cannot merge immediately but the PR is otherwise eligible, the
   workflow enables GitHub auto-merge so the PR can land as soon as the
   remaining repository requirements are satisfied
 - the original PR title is preserved as the squash commit subject
 - `deps:` and `container:` updates remain release-bearing after merge
-- `ci:` updates remain non-release-bearing
+- `ci:` and `chore:` updates remain non-release-bearing
 - patch, minor, and major version updates are all eligible for merge after
   validation
 - the repo-scoped `GITHUB_TOKEN` is the default merge credential, and an
-  optional `DEPENDABOT_AUTOMERGE_TOKEN` can be added if workflow-file
-  Dependabot PRs also need to merge automatically under GitHub's stricter
+  optional `AUTOMATION_AUTOMERGE_TOKEN` can be added if workflow-file
+  automation PRs also need to merge automatically under GitHub's stricter
   workflow-permission rules
 - the release workflows publish directly to the tagged GitHub Release rather
   than creating a temporary draft shell, and they clean up stale orphan
