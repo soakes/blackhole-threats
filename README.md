@@ -17,6 +17,7 @@ and a signed APT repository.
 
 **Quick links:** [📦 Releases](https://github.com/soakes/blackhole-threats/releases) · [🐳 GHCR](https://ghcr.io/soakes/blackhole-threats) · [🔐 APT Repository](https://soakes.github.io/blackhole-threats/) · [📚 Documentation](docs/README.md) · [🏗️ Architecture](docs/architecture.md)
 
+<a id="table-of-contents"></a>
 ## 🧭 Table of Contents
 
 - [📖 Overview](#overview)
@@ -38,6 +39,7 @@ and a signed APT repository.
 
 ---
 
+<a id="overview"></a>
 ## 📖 Overview
 
 `blackhole-threats` is a Go RTBH route server. It reads local or remote threat
@@ -89,6 +91,7 @@ Credit for the original project and idea belongs to Eric Barkie:
 
 ---
 
+<a id="capabilities"></a>
 ## ✨ Capabilities
 
 - **Feed ingestion**: reads local files plus `http://` and `https://` sources
@@ -103,6 +106,7 @@ Credit for the original project and idea belongs to Eric Barkie:
 
 ---
 
+<a id="how-it-works"></a>
 ## 🔄 How It Works
 
 At runtime, `blackhole-threats` follows a simple route lifecycle:
@@ -143,6 +147,7 @@ For the package layout and component boundaries, see
 
 ---
 
+<a id="prerequisites"></a>
 ## ✅ Prerequisites
 
 - A BGP-speaking environment where downstream routers can peer with this service
@@ -157,6 +162,7 @@ For the package layout and component boundaries, see
 
 ---
 
+<a id="installation"></a>
 ## 🚀 Installation
 
 ### Build From Source
@@ -197,6 +203,7 @@ This expects Debian packaging tools such as `debhelper`, `golang-any`, and
 
 ---
 
+<a id="configuration"></a>
 ## ⚙️ Configuration
 
 The service uses a YAML file with two main sections:
@@ -299,6 +306,7 @@ add chain=threats-in comment="Blackhole C&C and don't route or peer addresses" d
 
 ---
 
+<a id="feed-sources-and-formats"></a>
 ## 🌐 Feed Sources and Formats
 
 `blackhole-threats` can ingest feeds from both disk and the network.
@@ -354,6 +362,7 @@ Top-level JSON arrays and line-delimited JSON streams are both supported.
 
 ---
 
+<a id="usage"></a>
 ## 🧪 Usage
 
 ### Basic Run
@@ -499,6 +508,7 @@ Equivalent JSON startup line:
 
 ---
 
+<a id="container"></a>
 ## 🐳 Container
 
 The container image is published to GitHub Container Registry as:
@@ -544,6 +554,7 @@ docker logs -f blackhole-threats
 
 ---
 
+<a id="debian-package"></a>
 ## 📦 Debian Package
 
 The Debian package installs the service into standard Debian locations.
@@ -584,6 +595,7 @@ sudo journalctl -u blackhole-threats -f
 
 ---
 
+<a id="apt-repository"></a>
 ## 🔐 APT Repository
 
 Automated `v*` releases from `main` publish a signed APT repository through
@@ -662,6 +674,7 @@ sudo apt install blackhole-threats
 
 ---
 
+<a id="cicd-and-release-automation"></a>
 ## 🤖 CI/CD and Release Automation
 
 GitHub Actions covers validation, packaging, publishing, and scheduled pin
@@ -750,6 +763,7 @@ refresh for this repository.
 
 ---
 
+<a id="project-structure"></a>
 ## 🗂️ Project Structure
 
 ```text
@@ -823,6 +837,7 @@ blackhole-threats/
 
 ---
 
+<a id="troubleshooting"></a>
 ## 🩺 Troubleshooting
 
 ### Configuration File Not Found
@@ -885,6 +900,7 @@ Checks:
 
 ---
 
+<a id="contributing"></a>
 ## 🤝 Contributing
 
 Contributions should preserve the operator-facing behavior of the project:
@@ -983,6 +999,7 @@ Practical rules:
 
 ---
 
+<a id="license"></a>
 ## 📄 License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
