@@ -26,6 +26,7 @@ next to the main [README](../README.md).
 | [../GOVERNANCE.md](../GOVERNANCE.md) | Maintainer-led project model and decision process |
 | [../ROADMAP.md](../ROADMAP.md) | Current priorities and non-goals |
 | [../FUNDING.md](../FUNDING.md) | Sponsorship, donated infrastructure, and tooling credit use |
+| [../OPEN_SOURCE_IMPACT.md](../OPEN_SOURCE_IMPACT.md) | Public benefit, maintenance cost, and funding/credit use |
 
 ## Suggested Reading Order
 

@@ -4,6 +4,9 @@ This roadmap describes the current direction of the public project. It is not a
 promise of delivery dates; priorities may change when security, packaging, or
 operator-impacting issues appear.
 
+For the funding and credit-review view of why these priorities matter, see
+[OPEN_SOURCE_IMPACT.md](OPEN_SOURCE_IMPACT.md).
+
 ## Current Priorities
 
 - Keep source, container, Debian, and signed APT release paths reliable.

@@ -12,9 +12,9 @@ automation.
   open-source project health only: `go.mod`, `go.sum`, `Makefile`,
   `Dockerfile`, `README.md`, `LICENSE`, `CONTRIBUTING.md`,
   `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `GOVERNANCE.md`,
-  `FUNDING.md`, `ROADMAP.md`, and repo config files belong at the root because
-  local tooling, GitHub community-profile checks, and funding reviewers expect
-  them there.
+  `FUNDING.md`, `ROADMAP.md`, `OPEN_SOURCE_IMPACT.md`, and repo config files
+  belong at the root because local tooling, GitHub community-profile checks, and
+  funding reviewers expect them there.
 - `internal/buildinfo` is the canonical location for version, commit, and build
   date metadata injected at build time.
 - `internal/config` owns YAML loading, feed definitions, and BGP community
@@ -350,9 +350,9 @@ automation.
   repository section.
 - If workflow names, publish conditions, or security posture change, update the
   README CI/CD and contributing sections.
-- If contribution, conduct, security, support, governance, roadmap, or funding
-  expectations change, update the matching root project-health file and the
-  README open-source support section in the same change.
+- If contribution, conduct, security, support, governance, roadmap, funding, or
+  impact expectations change, update the matching root project-health file and
+  the README open-source support section in the same change.
 
 ## Agent Behaviour & Task Scope
 

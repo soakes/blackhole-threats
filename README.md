@@ -925,6 +925,8 @@ Project health and support files:
 - [ROADMAP.md](ROADMAP.md) lists current direction and non-goals.
 - [FUNDING.md](FUNDING.md) explains how sponsorship, donated infrastructure,
   and AI/tooling credits support the public project.
+- [OPEN_SOURCE_IMPACT.md](OPEN_SOURCE_IMPACT.md) summarises public benefit,
+  support use, AI/tooling credit use, and maintainer independence.
 
 Current financial support is through
 [Buy Me a Coffee](https://buymeacoffee.com/soakes). The GitHub Sponsor button is

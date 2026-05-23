@@ -6,6 +6,9 @@ release automation.
 
 Support helps keep that operational surface maintained.
 
+For a reviewer-focused summary of public benefit, maintenance cost, and credit
+use, see [OPEN_SOURCE_IMPACT.md](OPEN_SOURCE_IMPACT.md).
+
 ## What Support Funds
 
 Funding, sponsorship, hosted credits, and tooling credits may be used for:
@@ -35,6 +38,7 @@ project-health files are intended to provide review context:
 - [SECURITY.md](SECURITY.md)
 - [GOVERNANCE.md](GOVERNANCE.md)
 - [ROADMAP.md](ROADMAP.md)
+- [OPEN_SOURCE_IMPACT.md](OPEN_SOURCE_IMPACT.md)
 
 Restricted credits or infrastructure should support the public project and must
 not require private control over releases, signing, vulnerability handling, or
