@@ -1,0 +1,71 @@
+name: Bug report
+description: Report reproducible runtime, packaging, or release behavior.
+title: "fix: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. For vulnerabilities or sensitive findings, use SECURITY.md instead of a public issue.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Runtime
+        - Configuration
+        - Feed parsing
+        - BGP announcements
+        - Container
+        - Debian package
+        - APT repository
+        - Release automation
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of blackhole-threats -version, package version, or container tag.
+      placeholder: v1.2.3, v1.2.4-rc.1, main@abcdef0
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Include commands, redacted config, and any relevant environment details.
+      placeholder: |
+        1. Run ...
+        2. Configure ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or output
+      description: Redact credentials, private peer details, and sensitive addresses.
+      render: text
+  - type: textarea
+    id: validation
+    attributes:
+      label: Local validation
+      description: Commands or checks already run.
+      placeholder: make test, make package, docker logs, journalctl, route inspection

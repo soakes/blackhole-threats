@@ -8,9 +8,12 @@ automation.
 - Keep the executable entrypoint in `cmd/blackhole-threats/`.
 - Keep application code under `internal/`; do not add new top-level Go packages
   at the repo root.
-- Keep root-level files for module, build, packaging, and release metadata only:
-  `go.mod`, `go.sum`, `Makefile`, `Dockerfile`, `README.md`, and repo config
-  files belong at the root because the local tooling and GitHub workflows expect
+- Keep root-level files for module, build, packaging, release metadata, and
+  open-source project health only: `go.mod`, `go.sum`, `Makefile`,
+  `Dockerfile`, `README.md`, `LICENSE`, `CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `GOVERNANCE.md`,
+  `FUNDING.md`, `ROADMAP.md`, and repo config files belong at the root because
+  local tooling, GitHub community-profile checks, and funding reviewers expect
   them there.
 - `internal/buildinfo` is the canonical location for version, commit, and build
   date metadata injected at build time.
@@ -347,6 +350,9 @@ automation.
   repository section.
 - If workflow names, publish conditions, or security posture change, update the
   README CI/CD and contributing sections.
+- If contribution, conduct, security, support, governance, roadmap, or funding
+  expectations change, update the matching root project-health file and the
+  README open-source support section in the same change.
 
 ## Agent Behaviour & Task Scope
 

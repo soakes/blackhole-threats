@@ -15,7 +15,7 @@ Built for operators who want one service, one config format, and one release pat
 they can actually deploy: source builds, container images, Debian packages,
 and a signed APT repository.
 
-**Quick links:** [📦 Releases](https://github.com/soakes/blackhole-threats/releases) · [🐳 GHCR](https://ghcr.io/soakes/blackhole-threats) · [🔐 APT Repository](https://soakes.github.io/blackhole-threats/) · [📚 Documentation](docs/README.md) · [🏗️ Architecture](docs/architecture.md)
+**Quick links:** [📦 Releases](https://github.com/soakes/blackhole-threats/releases) · [🐳 GHCR](https://ghcr.io/soakes/blackhole-threats) · [🔐 APT Repository](https://soakes.github.io/blackhole-threats/) · [📚 Documentation](docs/README.md) · [🏗️ Architecture](docs/architecture.md) · [💬 Discussions](https://github.com/soakes/blackhole-threats/discussions) · [🤝 Contributing](CONTRIBUTING.md) · [☕ Funding](FUNDING.md)
 
 <a id="table-of-contents"></a>
 ## 🧭 Table of Contents
@@ -34,6 +34,7 @@ and a signed APT repository.
 - [🤖 CI/CD and Release Automation](#cicd-and-release-automation)
 - [🗂️ Project Structure](#project-structure)
 - [🩺 Troubleshooting](#troubleshooting)
+- [🌱 Open Source and Support](#open-source-and-support)
 - [🤝 Contributing](#contributing)
 - [📄 License](#license)
 
@@ -900,8 +901,42 @@ Checks:
 
 ---
 
+<a id="open-source-and-support"></a>
+## 🌱 Open Source and Support
+
+`blackhole-threats` is maintained as an MIT-licensed open source project with
+public source, packaging, release automation, and documentation.
+
+Project health and support files:
+
+- [LICENSE](LICENSE) defines the MIT license.
+- [CONTRIBUTING.md](CONTRIBUTING.md) explains development, validation, and pull
+  request expectations.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) covers expected behavior in project
+  spaces.
+- [SECURITY.md](SECURITY.md) explains private vulnerability reporting and
+  supported versions.
+- [SUPPORT.md](SUPPORT.md) explains where to ask for help and what details to
+  include.
+- [Discussions](https://github.com/soakes/blackhole-threats/discussions) are
+  open for operator questions, deployment notes, feed ideas, and roadmap
+  discussion.
+- [GOVERNANCE.md](GOVERNANCE.md) describes the maintainer-led project model.
+- [ROADMAP.md](ROADMAP.md) lists current direction and non-goals.
+- [FUNDING.md](FUNDING.md) explains how sponsorship, donated infrastructure,
+  and AI/tooling credits support the public project.
+
+Current financial support is through
+[Buy Me a Coffee](https://buymeacoffee.com/soakes). The GitHub Sponsor button is
+configured in [.github/FUNDING.yml](.github/FUNDING.yml).
+
+---
+
 <a id="contributing"></a>
 ## 🤝 Contributing
+
+The full contribution guide lives in [CONTRIBUTING.md](CONTRIBUTING.md). The
+short version is below.
 
 Contributions should preserve the operator-facing behavior of the project:
 

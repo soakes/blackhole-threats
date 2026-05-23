@@ -1,0 +1,50 @@
+name: Configuration or operations help
+description: Ask for help with deployment, config validation, feeds, or BGP behavior.
+title: "docs: "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not include secrets, private peering credentials, full internal topology, or sensitive security findings.
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Install method
+      options:
+        - Source build
+        - Container
+        - Debian package
+        - Signed APT repository
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of blackhole-threats -version, package version, or container tag.
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: Describe the deployment or behavior you want.
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant redacted config
+      description: Include only the relevant YAML and redact private details.
+      render: yaml
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or command output
+      render: text
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks already performed
+      description: Mention docs read, commands run, and router-side checks.

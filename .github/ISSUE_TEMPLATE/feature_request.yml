@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest an operator-facing improvement.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operational problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the behavior, config shape, or workflow you would expect.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing workarounds, router-side options, or simpler approaches.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Operational impact
+      description: Note routing, packaging, upgrade, release, or security implications.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This can be implemented without a proprietary runtime dependency.
+        - label: This keeps the daemon focused on RTBH route publication.
+        - label: I am willing to help validate the behavior in an operator environment.
