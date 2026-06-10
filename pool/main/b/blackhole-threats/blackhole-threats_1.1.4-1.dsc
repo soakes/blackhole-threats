@@ -1,0 +1,23 @@
+Format: 3.0 (quilt)
+Source: blackhole-threats
+Binary: blackhole-threats
+Architecture: linux-any
+Version: 1.1.4-1
+Maintainer: Simon Oakes <813389+soakes@users.noreply.github.com>
+Homepage: https://github.com/soakes/blackhole-threats
+Standards-Version: 4.6.2
+Vcs-Browser: https://github.com/soakes/blackhole-threats
+Vcs-Git: https://github.com/soakes/blackhole-threats.git
+Build-Depends: debhelper-compat (= 13), golang-any (>= 2:1.24~) | golang-go (>= 2:1.24~)
+Package-List:
+ blackhole-threats deb net optional arch=linux-any
+Checksums-Sha1:
+ 562af4a81f6f17eb9df6f9e0a38cf8363e604d55 109948 blackhole-threats_1.1.4.orig.tar.gz
+ 6bddae5e34832c3e3ce22e92725662f2df4f349c 4636 blackhole-threats_1.1.4-1.debian.tar.xz
+Checksums-Sha256:
+ 65f7a068856291e871a749cf5a4166958c9e619afec6688b06e9d3e4eb3a178b 109948 blackhole-threats_1.1.4.orig.tar.gz
+ bfcb5a9710c4572ac1ff17774b9dfb7d7b3a3358bc465d2818e78a21f39eee59 4636 blackhole-threats_1.1.4-1.debian.tar.xz
+Files:
+ 50a0d95ac85562eeff7d7e7697073b46 109948 blackhole-threats_1.1.4.orig.tar.gz
+ fd3802943f8dbe4e1e190085a9bd867c 4636 blackhole-threats_1.1.4-1.debian.tar.xz
+Go-Import-Path: github.com/soakes/blackhole-threats
