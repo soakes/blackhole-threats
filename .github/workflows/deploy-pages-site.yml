@@ -35,14 +35,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Restore durable repository snapshot branch
         id: snapshot_branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         continue-on-error: true
         with:
           path: published-site
