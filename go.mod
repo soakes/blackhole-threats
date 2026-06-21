@@ -1,4 +1,4 @@
-module github.com/soakes/blackhole-threats
+module github.com/netspeedy/blackhole-threats
 
 go 1.25.0
 

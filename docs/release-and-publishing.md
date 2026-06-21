@@ -107,7 +107,7 @@ Triggers:
 
 Published channels:
 
-- `ghcr.io/soakes/blackhole-threats:rc` plus full `v*-rc.*` tags for release candidates
+- `ghcr.io/netspeedy/blackhole-threats:rc` plus full `v*-rc.*` tags for release candidates
 - stable semver tags and `latest` for promoted stable releases
 
 ### Publish Signed Debian Repository

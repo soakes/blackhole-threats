@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Operator questions and deployment discussion
-    url: https://github.com/soakes/blackhole-threats/discussions
+    url: https://github.com/netspeedy/blackhole-threats/discussions
     about: Ask questions, compare deployment notes, discuss feeds, and talk through roadmap ideas.
   - name: Security vulnerability or sensitive report
-    url: https://github.com/soakes/blackhole-threats/security/advisories/new
+    url: https://github.com/netspeedy/blackhole-threats/security/advisories/new
     about: Report vulnerabilities privately instead of opening a public issue.

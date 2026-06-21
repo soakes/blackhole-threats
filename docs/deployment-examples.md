@@ -61,12 +61,12 @@ journald.
 
 ```bash
 sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://soakes.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg \
+curl -fsSL https://netspeedy.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg \
   | sudo tee /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg >/dev/null
 
 sudo tee /etc/apt/sources.list.d/blackhole-threats.sources >/dev/null <<'EOF'
 Types: deb deb-src
-URIs: https://soakes.github.io/blackhole-threats/
+URIs: https://netspeedy.github.io/blackhole-threats/
 Suites: stable
 Components: main
 Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg
@@ -112,12 +112,12 @@ directory.
 ### Basic run
 
 ```bash
-docker pull ghcr.io/soakes/blackhole-threats:latest
+docker pull ghcr.io/netspeedy/blackhole-threats:latest
 docker run -d \
   -p 179:179 \
   -v "$PWD/config:/config" \
   --name blackhole-threats \
-  ghcr.io/soakes/blackhole-threats:latest
+  ghcr.io/netspeedy/blackhole-threats:latest
 ```
 
 On first boot, the container will create `/config/blackhole-threats.yaml` if it
@@ -131,7 +131,7 @@ docker run -d \
   -v "$PWD/config:/config" \
   -e BLACKHOLE_THREATS_EXTRA_OPTS="-log-format json -log-level debug -refresh-rate 15m" \
   --name blackhole-threats \
-  ghcr.io/soakes/blackhole-threats:latest
+  ghcr.io/netspeedy/blackhole-threats:latest
 ```
 
 ### Use an alternate config path
@@ -142,7 +142,7 @@ docker run -d \
   -v "$PWD/config:/config" \
   -e BLACKHOLE_THREATS_CONF="/config/custom.yaml" \
   --name blackhole-threats \
-  ghcr.io/soakes/blackhole-threats:latest
+  ghcr.io/netspeedy/blackhole-threats:latest
 ```
 
 ### Trigger a manual refresh

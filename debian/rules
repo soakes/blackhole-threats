@@ -10,7 +10,7 @@ export GO111MODULE             := on
 export GOCACHE                 := $(BUILD_DIR)/.cache/go-build
 export GOMODCACHE              := $(BUILD_DIR)/.cache/go-mod
 export GOFLAGS                 ?= -trimpath
-export BLACKHOLE_LDFLAGS       ?= -X github.com/soakes/blackhole-threats/internal/buildinfo.Version=$(UPSTREAM_VERSION) -X github.com/soakes/blackhole-threats/internal/buildinfo.Commit=debian -X github.com/soakes/blackhole-threats/internal/buildinfo.BuildDate=$(BUILD_DATE)
+export BLACKHOLE_LDFLAGS       ?= -X github.com/netspeedy/blackhole-threats/internal/buildinfo.Version=$(UPSTREAM_VERSION) -X github.com/netspeedy/blackhole-threats/internal/buildinfo.Commit=debian -X github.com/netspeedy/blackhole-threats/internal/buildinfo.BuildDate=$(BUILD_DATE)
 
 ifeq ($(DEB_HOST_ARCH), amd64)
 	GOARCH := amd64

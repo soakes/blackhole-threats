@@ -63,7 +63,7 @@ jobs:
           npm --prefix "${WEBSITE_DIR}" run check
           make website-build \
             WEBSITE_DIR="${WEBSITE_DIR}" \
-            SITE_URL=https://soakes.github.io/blackhole-threats/ \
+            SITE_URL=https://netspeedy.github.io/blackhole-threats/ \
             SITE_RELEASE_VERSION="0.0.0-ci.${GITHUB_RUN_NUMBER}" \
             SITE_COMMIT="${GITHUB_SHA}" \
             SITE_BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \

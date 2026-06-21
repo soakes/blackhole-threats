@@ -24,7 +24,7 @@ network data, or sensitive logs.
 Preferred reporting path:
 
 1. Use GitHub private vulnerability reporting:
-   <https://github.com/soakes/blackhole-threats/security/advisories/new>.
+   <https://github.com/netspeedy/blackhole-threats/security/advisories/new>.
 2. If private vulnerability reporting is unavailable, contact the maintainer
    through a private channel listed on their GitHub profile.
 3. If no private channel is available, open a minimal public issue asking for a

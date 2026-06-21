@@ -5,11 +5,11 @@ Maintainer: Simon Oakes <813389+soakes@users.noreply.github.com>
 Build-Depends: debhelper-compat (= 13),
                golang-any (>= 2:1.24~) | golang-go (>= 2:1.24~)
 Standards-Version: 4.6.2
-Homepage: https://github.com/soakes/blackhole-threats
+Homepage: https://github.com/netspeedy/blackhole-threats
 Rules-Requires-Root: no
-Vcs-Browser: https://github.com/soakes/blackhole-threats
-Vcs-Git: https://github.com/soakes/blackhole-threats.git
-XS-Go-Import-Path: github.com/soakes/blackhole-threats
+Vcs-Browser: https://github.com/netspeedy/blackhole-threats
+Vcs-Git: https://github.com/netspeedy/blackhole-threats.git
+XS-Go-Import-Path: github.com/netspeedy/blackhole-threats
 
 Package: blackhole-threats
 Architecture: linux-any

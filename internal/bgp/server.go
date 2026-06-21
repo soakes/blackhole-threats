@@ -16,9 +16,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/soakes/blackhole-threats/internal/config"
-	"github.com/soakes/blackhole-threats/internal/feed"
-	"github.com/soakes/blackhole-threats/internal/logging"
+	"github.com/netspeedy/blackhole-threats/internal/config"
+	"github.com/netspeedy/blackhole-threats/internal/feed"
+	"github.com/netspeedy/blackhole-threats/internal/logging"
 )
 
 type Server struct {

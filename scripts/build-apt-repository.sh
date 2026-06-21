@@ -45,7 +45,7 @@ for arch in "${architectures[@]}"; do
   # These package builds cross-compile a static Go binary, so native build deps are sufficient.
   DEB_BUILD_OPTIONS=nocheck \
   DEB_HOST_ARCH="${arch}" \
-  BLACKHOLE_LDFLAGS="-X github.com/soakes/blackhole-threats/internal/buildinfo.Version=${version} -X github.com/soakes/blackhole-threats/internal/buildinfo.Commit=${commit} -X github.com/soakes/blackhole-threats/internal/buildinfo.BuildDate=${build_date}" \
+  BLACKHOLE_LDFLAGS="-X github.com/netspeedy/blackhole-threats/internal/buildinfo.Version=${version} -X github.com/netspeedy/blackhole-threats/internal/buildinfo.Commit=${commit} -X github.com/netspeedy/blackhole-threats/internal/buildinfo.BuildDate=${build_date}" \
     dpkg-buildpackage -d -us -uc -b -a"${arch}"
 
   find .. -maxdepth 1 -type f -name '*.deb' -exec mv {} "${pool_dir}/" \;

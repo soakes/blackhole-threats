@@ -144,5 +144,5 @@ template: |
   - Release binaries for `linux/amd64`, `linux/arm64`, and `linux/arm`
   - Debian packages for `amd64`, `arm64`, and `armhf`, plus a Debian source package
   - Checksums attached to the release
-  - Container images published to `ghcr.io/soakes/blackhole-threats`
+  - Container images published to `ghcr.io/netspeedy/blackhole-threats`
   - Stable releases also publish the signed GitHub Pages APT repository

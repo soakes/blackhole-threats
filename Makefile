@@ -1,12 +1,12 @@
 GO ?= go
 BINARY ?= blackhole-threats
 CMD_PATH ?= ./cmd/$(BINARY)
-PKG ?= github.com/soakes/blackhole-threats
+PKG ?= github.com/netspeedy/blackhole-threats
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || (dpkg-parsechangelog -SVersion 2>/dev/null | sed 's/-[^-]*$$//') || printf '%s' dev)
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || printf '%s' packaged)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 GOFLAGS ?= -trimpath
-SITE_URL ?= https://soakes.github.io/blackhole-threats/
+SITE_URL ?= https://netspeedy.github.io/blackhole-threats/
 SITE_RELEASE_VERSION ?= $(VERSION)
 SITE_COMMIT ?= $(COMMIT)
 SITE_BUILD_DATE ?= $(BUILD_DATE)

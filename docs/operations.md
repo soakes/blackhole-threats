@@ -106,7 +106,7 @@ docker run -d \
   -p 179:179 \
   -v "$PWD/config:/config" \
   --name blackhole-threats \
-  ghcr.io/soakes/blackhole-threats:latest
+  ghcr.io/netspeedy/blackhole-threats:latest
 ```
 
 The container creates `/config/blackhole-threats.yaml` automatically on first

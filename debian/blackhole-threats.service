@@ -1,7 +1,7 @@
 [Unit]
 Description=Blackhole threats BGP daemon
 Documentation=man:blackhole-threats(8)
-Documentation=https://github.com/soakes/blackhole-threats
+Documentation=https://github.com/netspeedy/blackhole-threats
 After=network.target
 
 [Service]

@@ -6,8 +6,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/soakes/blackhole-threats/internal/config"
-	"github.com/soakes/blackhole-threats/internal/feed"
+	"github.com/netspeedy/blackhole-threats/internal/config"
+	"github.com/netspeedy/blackhole-threats/internal/feed"
 )
 
 type stubFeedReader struct {

@@ -184,7 +184,7 @@ automation.
 ## Container Rules
 
 - GHCR is the canonical published registry for this repository's container image.
-- Keep the published image reference aligned with `ghcr.io/soakes/blackhole-threats`
+- Keep the published image reference aligned with `ghcr.io/netspeedy/blackhole-threats`
   unless the repository owner or publishing design changes intentionally.
 - Keep the Docker builder and runtime bases aligned with the supported Debian
   release line used by the repo.

@@ -12,10 +12,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/soakes/blackhole-threats/internal/bgp"
-	"github.com/soakes/blackhole-threats/internal/buildinfo"
-	"github.com/soakes/blackhole-threats/internal/config"
-	"github.com/soakes/blackhole-threats/internal/logging"
+	"github.com/netspeedy/blackhole-threats/internal/bgp"
+	"github.com/netspeedy/blackhole-threats/internal/buildinfo"
+	"github.com/netspeedy/blackhole-threats/internal/config"
+	"github.com/netspeedy/blackhole-threats/internal/logging"
 )
 
 func runMode(runOnce bool) string {

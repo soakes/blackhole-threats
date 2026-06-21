@@ -396,6 +396,6 @@ fi
   printf -- '- Release binaries for `linux/amd64`, `linux/arm64`, and `linux/arm`\n'
   printf -- '- Debian packages for `amd64`, `arm64`, and `armhf`, plus a Debian source package\n'
   printf -- '- Checksums attached to the release\n'
-  printf -- '- Container images published to `ghcr.io/soakes/blackhole-threats`\n'
+  printf -- '- Container images published to `ghcr.io/netspeedy/blackhole-threats`\n'
   printf -- '- Stable releases also publish the signed GitHub Pages APT repository\n'
 } > "${output_path}"

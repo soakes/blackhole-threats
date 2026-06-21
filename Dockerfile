@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build \
       -trimpath \
-      -ldflags="-s -w -X github.com/soakes/blackhole-threats/internal/buildinfo.Version=${VERSION} -X github.com/soakes/blackhole-threats/internal/buildinfo.Commit=${VCS_REF} -X github.com/soakes/blackhole-threats/internal/buildinfo.BuildDate=${BUILD_DATE}" \
+      -ldflags="-s -w -X github.com/netspeedy/blackhole-threats/internal/buildinfo.Version=${VERSION} -X github.com/netspeedy/blackhole-threats/internal/buildinfo.Commit=${VCS_REF} -X github.com/netspeedy/blackhole-threats/internal/buildinfo.BuildDate=${BUILD_DATE}" \
       -o /out/blackhole-threats \
       ./cmd/blackhole-threats
 
@@ -46,8 +46,8 @@ ENV S6_LOGGING=0 \
 
 LABEL org.opencontainers.image.title="blackhole-threats" \
       org.opencontainers.image.description="BGP blackhole route server for threat feeds" \
-      org.opencontainers.image.url="https://github.com/soakes/blackhole-threats" \
-      org.opencontainers.image.source="https://github.com/soakes/blackhole-threats" \
+      org.opencontainers.image.url="https://github.com/netspeedy/blackhole-threats" \
+      org.opencontainers.image.source="https://github.com/netspeedy/blackhole-threats" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.created="${BUILD_DATE}" \

@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: blackhole-threats
-Source: <https://github.com/soakes/blackhole-threats>
+Source: <https://github.com/netspeedy/blackhole-threats>
 
 Files: *
 Copyright: 2026 Simon Oakes <813389+soakes@users.noreply.github.com>
