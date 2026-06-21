@@ -654,8 +654,8 @@ refresh for this repository.
   - validates the container build, smoke-tests bootstrap and config override behavior, validates published platforms on pull requests, release tags, and manual dispatches, and only publishes `rc`, `v*-rc.*`, stable semver tags, and `latest` for release tags or explicit recovery dispatches
 - `Automated Release Candidate`
   - runs after `Build and Validate` succeeds for a push to `main`, calculates the next semantic stable target from conventional commit history, creates a `v*-rc.*` tag, waits for the prerelease asset and container publish jobs to pass, and leaves stable publication to explicit promotion
-- `Automation Auto Merge`
-  - runs after `Build and Validate` succeeds for Dependabot pull requests and the scheduled build/runtime pin refresh PR, attempts an approval when repository policy allows it, squash-merges green automation PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the pull request conventional-commit title on merge, and includes scheduled or manual backstops for any missed pull requests
+- `Dependabot Merge`
+  - runs after `Build and Validate` succeeds for Dependabot pull requests and the scheduled build/runtime pin refresh PR, attempts an approval when repository policy allows it, squash-merges green automation PRs when GitHub can merge them immediately, enables GitHub auto-merge when a PR only needs later branch-protection satisfaction, preserves the pull request conventional-commit title on merge, and supports manual scans for any missed pull requests
 - `Promote Release Candidate`
   - promotes a specific `v*-rc.*` tag to a stable `v*` tag when a maintainer is ready to publish stable assets, containers, and the signed APT repository, while honoring the optional `RELEASE_AUTOMATION_TOKEN` escape hatch for workflow-touching release commits
 - `Release Drafter`
@@ -743,7 +743,7 @@ blackhole-threats/
 │       ├── automated-release.yml
 │       ├── build-and-validate.yml
 │       ├── container-image.yml
-│       ├── automation-auto-merge.yml
+│       ├── dependabot-merge.yml
 │       ├── deploy-pages-site.yml
 │       ├── promote-release.yml
 │       ├── publish-apt-repository.yml

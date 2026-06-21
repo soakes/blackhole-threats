@@ -237,7 +237,7 @@ automation.
   access token just to merge Dependabot PRs unless branch protection or GitHub
   App policy changes make that necessary. If workflow-file Dependabot PRs also
   need to merge automatically, the supported exception is an optional
-  `DEPENDABOT_AUTOMERGE_TOKEN` with the minimum extra workflow permission needed
+  `AUTOMATION_AUTOMERGE_TOKEN` with the minimum extra workflow permission needed
   for that class of PR.
 - Automated releases may need `RELEASE_AUTOMATION_TOKEN` to push the generated
   `debian/changelog` commit and then tag the validated follow-up commit. Keep
