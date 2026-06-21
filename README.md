@@ -1,12 +1,12 @@
-# 🛡️ Blackhole Threats
+# Blackhole Threats
 
 > A Go-based RTBH route server that turns threat feeds into controlled BGP blackhole announcements.
 
-[![Validate](https://img.shields.io/github/actions/workflow/status/soakes/blackhole-threats/build-and-validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/soakes/blackhole-threats/actions/workflows/build-and-validate.yml)
-[![Container](https://img.shields.io/github/actions/workflow/status/soakes/blackhole-threats/container-image.yml?branch=main&style=flat-square&label=container)](https://github.com/soakes/blackhole-threats/actions/workflows/container-image.yml)
-[![Release](https://img.shields.io/github/v/release/soakes/blackhole-threats?sort=semver&style=flat-square)](https://github.com/soakes/blackhole-threats/releases)
-[![APT Repository](https://img.shields.io/badge/APT-signed%20repo-A81D33?style=flat-square&logo=debian&logoColor=white)](https://soakes.github.io/blackhole-threats/)
-[![GHCR](https://img.shields.io/badge/GHCR-published-2088FF?style=flat-square&logo=github)](https://ghcr.io/soakes/blackhole-threats)
+[![Validate](https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/build-and-validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/netspeedy/blackhole-threats/actions/workflows/build-and-validate.yml)
+[![Container](https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/container-image.yml?branch=main&style=flat-square&label=container)](https://github.com/netspeedy/blackhole-threats/actions/workflows/container-image.yml)
+[![Release](https://img.shields.io/github/v/release/netspeedy/blackhole-threats?sort=semver&style=flat-square)](https://github.com/netspeedy/blackhole-threats/releases)
+[![APT Repository](https://img.shields.io/badge/APT-signed%20repo-A81D33?style=flat-square&logo=debian&logoColor=white)](https://netspeedy.github.io/blackhole-threats/)
+[![GHCR](https://img.shields.io/badge/GHCR-published-2088FF?style=flat-square&logo=github)](https://ghcr.io/netspeedy/blackhole-threats)
 [![Go](https://img.shields.io/badge/Go-1.24%2B-00ADD8.svg?style=flat-square&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-2EA043.svg?style=flat-square)](LICENSE)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=000000)](https://buymeacoffee.com/soakes)
@@ -15,33 +15,9 @@ Built for operators who want one service, one config format, and one release pat
 they can actually deploy: source builds, container images, Debian packages,
 and a signed APT repository.
 
-**Quick links:** [📦 Releases](https://github.com/soakes/blackhole-threats/releases) · [🐳 GHCR](https://ghcr.io/soakes/blackhole-threats) · [🔐 APT Repository](https://soakes.github.io/blackhole-threats/) · [📚 Documentation](docs/README.md) · [🏗️ Architecture](docs/architecture.md) · [💬 Discussions](https://github.com/soakes/blackhole-threats/discussions) · [🤝 Contributing](CONTRIBUTING.md) · [☕ Funding](FUNDING.md)
+**Quick links:** [Releases](https://github.com/netspeedy/blackhole-threats/releases) · [GHCR](https://ghcr.io/netspeedy/blackhole-threats) · [APT Repository](https://netspeedy.github.io/blackhole-threats/) · [Documentation](docs/README.md) · [Architecture](docs/architecture.md) · [Discussions](https://github.com/netspeedy/blackhole-threats/discussions) · [Contributing](CONTRIBUTING.md) · [Funding](FUNDING.md)
 
-<a id="table-of-contents"></a>
-## 🧭 Table of Contents
-
-- [📖 Overview](#overview)
-- [✨ Capabilities](#capabilities)
-- [🔄 How It Works](#how-it-works)
-- [✅ Prerequisites](#prerequisites)
-- [🚀 Installation](#installation)
-- [⚙️ Configuration](#configuration)
-- [🌐 Feed Sources and Formats](#feed-sources-and-formats)
-- [🧪 Usage](#usage)
-- [🐳 Container](#container)
-- [📦 Debian Package](#debian-package)
-- [🔐 APT Repository](#apt-repository)
-- [🤖 CI/CD and Release Automation](#cicd-and-release-automation)
-- [🗂️ Project Structure](#project-structure)
-- [🩺 Troubleshooting](#troubleshooting)
-- [🌱 Open Source and Support](#open-source-and-support)
-- [🤝 Contributing](#contributing)
-- [📄 License](#license)
-
----
-
-<a id="overview"></a>
-## 📖 Overview
+## Overview
 
 `blackhole-threats` is a Go RTBH route server. It reads local or remote threat
 feeds, extracts IPv4 and IPv6 networks, summarises them, and advertises the
@@ -61,7 +37,7 @@ source builds, container images, Debian packages, and a signed APT repository.
 
 Pick the path that matches how you deploy:
 
-- **Container**: pull `ghcr.io/soakes/blackhole-threats:latest` for the latest tagged release
+- **Container**: pull `ghcr.io/netspeedy/blackhole-threats:latest` for the latest tagged release
 - **Debian**: use the signed APT repository and install `blackhole-threats`
 - **Source**: run `make build` and execute `dist/blackhole-threats`
 - **Validation**: use `-check-config` or `-once` before putting the daemon into service
@@ -92,8 +68,7 @@ Credit for the original project and idea belongs to Eric Barkie:
 
 ---
 
-<a id="capabilities"></a>
-## ✨ Capabilities
+## Capabilities
 
 - **Feed ingestion**: reads local files plus `http://` and `https://` sources
 - **Format handling**: parses plain text, JSON, JSONL, and NDJSON feeds
@@ -107,8 +82,7 @@ Credit for the original project and idea belongs to Eric Barkie:
 
 ---
 
-<a id="how-it-works"></a>
-## 🔄 How It Works
+## How It Works
 
 At runtime, `blackhole-threats` follows a simple route lifecycle:
 
@@ -148,8 +122,7 @@ For the package layout and component boundaries, see
 
 ---
 
-<a id="prerequisites"></a>
-## ✅ Prerequisites
+## Prerequisites
 
 - A BGP-speaking environment where downstream routers can peer with this service
 - A valid GoBGP-compatible configuration for your local ASN, router ID, and peers
@@ -163,13 +136,12 @@ For the package layout and component boundaries, see
 
 ---
 
-<a id="installation"></a>
-## 🚀 Installation
+## Installation
 
 ### Build From Source
 
 ```bash
-git clone https://github.com/soakes/blackhole-threats.git
+git clone https://github.com/netspeedy/blackhole-threats.git
 cd blackhole-threats
 make build
 ```
@@ -187,11 +159,11 @@ separately.
 ### Run the Published Container
 
 ```bash
-docker pull ghcr.io/soakes/blackhole-threats:latest
+docker pull ghcr.io/netspeedy/blackhole-threats:latest
 ```
 
 `latest` tracks stable tagged releases, and release candidates publish to the
-`ghcr.io/soakes/blackhole-threats:rc` channel plus their full `v*-rc.*` tag.
+`ghcr.io/netspeedy/blackhole-threats:rc` channel plus their full `v*-rc.*` tag.
 
 ### Build a Debian Package
 
@@ -204,8 +176,7 @@ This expects Debian packaging tools such as `debhelper`, `golang-any`, and
 
 ---
 
-<a id="configuration"></a>
-## ⚙️ Configuration
+## Configuration
 
 The service uses a YAML file with two main sections:
 
@@ -307,8 +278,7 @@ add chain=threats-in comment="Blackhole C&C and don't route or peer addresses" d
 
 ---
 
-<a id="feed-sources-and-formats"></a>
-## 🌐 Feed Sources and Formats
+## Feed Sources and Formats
 
 `blackhole-threats` can ingest feeds from both disk and the network.
 
@@ -363,8 +333,7 @@ Top-level JSON arrays and line-delimited JSON streams are both supported.
 
 ---
 
-<a id="usage"></a>
-## 🧪 Usage
+## Usage
 
 ### Basic Run
 
@@ -509,13 +478,12 @@ Equivalent JSON startup line:
 
 ---
 
-<a id="container"></a>
-## 🐳 Container
+## Container
 
 The container image is published to GitHub Container Registry as:
 
 ```text
-ghcr.io/soakes/blackhole-threats
+ghcr.io/netspeedy/blackhole-threats
 ```
 
 ### Container Notes
@@ -535,17 +503,17 @@ ghcr.io/soakes/blackhole-threats
 ### Example Usage
 
 ```bash
-docker pull ghcr.io/soakes/blackhole-threats:latest
+docker pull ghcr.io/netspeedy/blackhole-threats:latest
 docker run -d \
   -p 179:179 \
   -v "$PWD/config:/config" \
   -e BLACKHOLE_THREATS_EXTRA_OPTS="-log-level debug -refresh-rate 15m" \
   --name blackhole-threats \
-  ghcr.io/soakes/blackhole-threats:latest
+  ghcr.io/netspeedy/blackhole-threats:latest
 ```
 
 If you want the current release candidate stream, use
-`ghcr.io/soakes/blackhole-threats:rc`.
+`ghcr.io/netspeedy/blackhole-threats:rc`.
 
 Inspect the live service logs with:
 
@@ -555,8 +523,7 @@ docker logs -f blackhole-threats
 
 ---
 
-<a id="debian-package"></a>
-## 📦 Debian Package
+## Debian Package
 
 The Debian package installs the service into standard Debian locations.
 
@@ -596,8 +563,7 @@ sudo journalctl -u blackhole-threats -f
 
 ---
 
-<a id="apt-repository"></a>
-## 🔐 APT Repository
+## APT Repository
 
 Automated `v*` releases from `main` publish a signed APT repository through
 GitHub Pages.
@@ -608,35 +574,35 @@ URL for machine consumption.
 Repository base URL:
 
 ```text
-https://soakes.github.io/blackhole-threats/
+https://netspeedy.github.io/blackhole-threats/
 ```
 
 Archive key:
 
 ```text
-https://soakes.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg
+https://netspeedy.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg
 ```
 
 Archive key fingerprint:
 
 ```text
-https://soakes.github.io/blackhole-threats/blackhole-threats-archive-keyring.fingerprint.txt
+https://netspeedy.github.io/blackhole-threats/blackhole-threats-archive-keyring.fingerprint.txt
 ```
 
 ### Add the Repository
 
 ```bash
 sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://soakes.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg \
+curl -fsSL https://netspeedy.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg \
   | sudo tee /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg >/dev/null
 
-curl -fsSL https://soakes.github.io/blackhole-threats/blackhole-threats-archive-keyring.fingerprint.txt
+curl -fsSL https://netspeedy.github.io/blackhole-threats/blackhole-threats-archive-keyring.fingerprint.txt
 
 # Verify the fingerprint matches the expected archive key before proceeding
 
 sudo tee /etc/apt/sources.list.d/blackhole-threats.sources >/dev/null <<'EOF'
 Types: deb deb-src
-URIs: https://soakes.github.io/blackhole-threats/
+URIs: https://netspeedy.github.io/blackhole-threats/
 Suites: stable
 Components: main
 Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg
@@ -675,8 +641,7 @@ sudo apt install blackhole-threats
 
 ---
 
-<a id="cicd-and-release-automation"></a>
-## 🤖 CI/CD and Release Automation
+## CI/CD and Release Automation
 
 GitHub Actions covers validation, packaging, publishing, and scheduled pin
 refresh for this repository.
@@ -698,9 +663,9 @@ refresh for this repository.
 - `Release Assets`
   - builds tagged release binaries plus Debian binary and source packages, publishes a curated GitHub Release asset set for operators, generates checksums, publishes GitHub Releases as prereleases for `v*-rc.*` tags and stable releases for `v*`, uses an existing draft body when one already exists for the tag, cleans up stale orphan `untagged-*` drafts before publishing, and supports recovery dispatches from the current default branch with `release_ref=<tag>`
 - `Publish Signed Debian Repository`
-  - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Astro-based landing site, signs the repository, deploys both to GitHub Pages for stable `v*` tags, and supports recovery dispatches from the current default branch with `release_ref=<stable-tag>`
+  - builds Debian binary and source packages, generates APT metadata, smoke-tests the signed repository with APT, builds the Vite-based landing site, signs the repository, deploys both to GitHub Pages for stable `v*` tags, and supports recovery dispatches from the current default branch with `release_ref=<stable-tag>`
 - `Deploy Pages Site`
-  - rebuilds the Astro landing site on `main`, overlays it onto the latest published Pages snapshot, republishes the combined result after stable APT publication or website-only changes, and does not require a new release tag for landing-page-only refreshes
+  - rebuilds the Vite landing site on `main`, overlays it onto the latest published Pages snapshot, republishes the combined result after stable APT publication or website-only changes, and does not require a new release tag for landing-page-only refreshes
 - `Refresh Build and Runtime Pins`
   - refreshes the pinned Docker Go build image version and updates the pinned Docker `s6-overlay` version and checksum pins
 
@@ -764,8 +729,7 @@ refresh for this repository.
 
 ---
 
-<a id="project-structure"></a>
-## 🗂️ Project Structure
+## Project Structure
 
 ```text
 blackhole-threats/
@@ -838,8 +802,7 @@ blackhole-threats/
 
 ---
 
-<a id="troubleshooting"></a>
-## 🩺 Troubleshooting
+## Troubleshooting
 
 ### Configuration File Not Found
 
@@ -901,8 +864,7 @@ Checks:
 
 ---
 
-<a id="open-source-and-support"></a>
-## 🌱 Open Source and Support
+## Open Source and Support
 
 `blackhole-threats` is maintained as an MIT-licensed open source project with
 public source, packaging, release automation, and documentation.
@@ -918,7 +880,7 @@ Project health and support files:
   supported versions.
 - [SUPPORT.md](SUPPORT.md) explains where to ask for help and what details to
   include.
-- [Discussions](https://github.com/soakes/blackhole-threats/discussions) are
+- [Discussions](https://github.com/netspeedy/blackhole-threats/discussions) are
   open for operator questions, deployment notes, feed ideas, and roadmap
   discussion.
 - [GOVERNANCE.md](GOVERNANCE.md) describes the maintainer-led project model.
@@ -934,8 +896,7 @@ configured in [.github/FUNDING.yml](.github/FUNDING.yml).
 
 ---
 
-<a id="contributing"></a>
-## 🤝 Contributing
+## Contributing
 
 The full contribution guide lives in [CONTRIBUTING.md](CONTRIBUTING.md). The
 short version is below.
@@ -1036,7 +997,6 @@ Practical rules:
 
 ---
 
-<a id="license"></a>
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
