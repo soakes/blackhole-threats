@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Blackhole Threats turns local and remote threat feeds into controlled RTBH BGP announcements with signed Debian and container delivery."
+      content="Blackhole Threats turns local and remote threat feeds into controlled RTBH route automation with signed Debian and container delivery."
     />
     <meta name="author" content="netspeedy" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -17,7 +17,7 @@
     <meta property="og:title" content="Blackhole Threats — Controlled RTBH route automation" />
     <meta
       property="og:description"
-      content="Turns local and remote threat feeds into controlled RTBH BGP route deltas, with signed Debian and container delivery."
+      content="Turns local and remote threat feeds into controlled RTBH route automation, with signed Debian and container delivery."
     />
     <meta property="og:image" content="https://netspeedy.github.io/blackhole-threats/og-image.png?v=1" />
     <meta property="og:image:secure_url" content="https://netspeedy.github.io/blackhole-threats/og-image.png?v=1" />
@@ -32,7 +32,7 @@
     <meta name="twitter:title" content="Blackhole Threats — Controlled RTBH route automation" />
     <meta
       name="twitter:description"
-      content="Turns local and remote threat feeds into controlled RTBH BGP route deltas, with signed Debian and container delivery."
+      content="Turns local and remote threat feeds into controlled RTBH route automation, with signed Debian and container delivery."
     />
     <meta name="twitter:url" content="https://netspeedy.github.io/blackhole-threats/" />
     <meta name="twitter:image" content="https://netspeedy.github.io/blackhole-threats/og-image.png?v=1" />
@@ -74,12 +74,12 @@
     <main>
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-dot"></span>RTBH route server for network operators</p>
-          <h1 id="hero-title">Threat feeds in.<br /><span class="accent">Controlled blackholes</span> out.</h1>
+          <p class="eyebrow"><span class="eyebrow-dot"></span>RTBH automation for network operators</p>
+          <h1 id="hero-title">Controlled RTBH<br /><span class="accent">route automation.</span></h1>
           <p class="hero-lead">
-            blackhole-threats reads local and remote threat intelligence, normalises IPv4 and IPv6
-            prefixes, and announces conservative BGP route deltas &mdash; with last-good-state
-            protection when a feed goes quiet.
+            blackhole-threats turns local and remote threat feeds into IPv4 and IPv6
+            blackhole announcements, with deterministic route deltas, per-community policy
+            boundaries, and last-known-good protection when a source fails.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="btn btn-primary" href="#install" data-install-tab="apt">
@@ -89,9 +89,9 @@
             <a class="btn btn-ghost" href="https://github.com/netspeedy/blackhole-threats#readme" id="hero-docs-link">Read the operator guide</a>
           </div>
           <ul class="hero-facts" aria-label="Runtime capabilities">
-            <li>Go daemon</li>
-            <li>Embedded GoBGP</li>
-            <li>JSON &amp; text feeds</li>
+            <li>Signed APT</li>
+            <li>GHCR image</li>
+            <li>Per-community policy</li>
             <li>IPv4 / IPv6</li>
           </ul>
         </div>
@@ -118,7 +118,7 @@
       <section class="release-band wrapper" aria-labelledby="release-heading">
         <div class="section-head">
           <p class="eyebrow">Current release</p>
-          <h2 id="release-heading">Operator-grade artifacts, signed and reproducible.</h2>
+          <h2 id="release-heading">Signed releases with visible provenance.</h2>
         </div>
         <div class="release-grid">
           <div class="release-card release-card--lead">
@@ -156,28 +156,28 @@
             <span class="cap-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 14a4 4 0 010-8 5 5 0 019.6-1.5A4.5 4.5 0 0118 14H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 11v6m0 0l-2.2-2.2M12 17l2.2-2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <h3>Ingest mixed feeds</h3>
+            <h3>Normalise feed input</h3>
             <p>Read local files, HTTP, and HTTPS sources in plain text, JSON arrays, JSONL, or NDJSON.</p>
           </article>
           <article class="capability-card">
             <span class="cap-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h7M4 12h5M4 17h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M15 5l5 5-5 5M20 10h-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 14l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0"/></svg>
             </span>
-            <h3>Publish route deltas</h3>
+            <h3>Publish only route deltas</h3>
             <p>Build the desired table, compare to active state, then withdraw stale routes and announce changes only.</p>
           </article>
           <article class="capability-card">
             <span class="cap-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none"><path d="M3 12l4-4h6l8 8-4 4-8-8v-0z M9 8l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="15" cy="14" r="1.4" fill="currentColor"/></svg>
             </span>
-            <h3>Respect communities</h3>
+            <h3>Keep policy boundaries explicit</h3>
             <p>Group feeds by BGP community so policy boundaries stay explicit and auditable on the wire.</p>
           </article>
           <article class="capability-card">
             <span class="cap-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <h3>Carry forward safely</h3>
+            <h3>Preserve last-known-good routes</h3>
             <p>When a community refresh fails, preserve its last known-good routes and retry on the next cycle.</p>
           </article>
         </div>
@@ -187,9 +187,9 @@
         <div class="section-head section-head--split">
           <div>
             <p class="eyebrow">Install</p>
-            <h2 id="install-heading">Pick the path that matches the host.</h2>
+            <h2 id="install-heading">Choose the delivery path for your environment.</h2>
           </div>
-          <p class="section-aside">Signed APT is the recommended path for long-running Debian-family hosts. The container image is the direct copy-paste path for container runtimes.</p>
+          <p class="section-aside">Signed APT is the recommended path for long-running Debian-family hosts. Use GHCR for container runtimes with configuration mounted under <code>/config</code>.</p>
         </div>
 
         <div class="install-tabs">
@@ -289,7 +289,7 @@
           </svg>
           <div>
             <strong>Blackhole Threats</strong>
-            <p>RTBH route automation with signed packages, deterministic route deltas, and first-party release artifacts.</p>
+            <p>Controlled RTBH route automation with signed packages, deterministic route deltas, and visible release provenance.</p>
           </div>
         </div>
         <nav class="footer-links" aria-label="Footer links">

@@ -57,36 +57,36 @@
   <!-- eyebrow -->
   <g transform="translate(72 188)">
     <circle cx="5" cy="-5" r="5" fill="#ff4d63" />
-    <text x="20" y="0" fill="#aab1bf" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="18" font-weight="600" letter-spacing="3.2">RTBH ROUTE SERVER FOR NETWORK OPERATORS</text>
+    <text x="20" y="0" fill="#aab1bf" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="18" font-weight="600" letter-spacing="3.2">RTBH AUTOMATION FOR NETWORK OPERATORS</text>
   </g>
 
   <!-- title -->
   <text x="72" y="276" fill="#f2f4f8" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="84" font-weight="800" letter-spacing="-2">Blackhole Threats</text>
 
   <!-- subtitle -->
-  <text x="72" y="338" fill="#f2f4f8" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="40" font-weight="650">Threat feeds in.</text>
-  <text x="72" y="386" fill="#ff4d63" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="40" font-weight="650">Controlled blackholes out.</text>
+  <text x="72" y="338" fill="#f2f4f8" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="40" font-weight="650">Controlled RTBH</text>
+  <text x="72" y="386" fill="#ff4d63" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="40" font-weight="650">route automation.</text>
 
   <!-- lead -->
   <g font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="22" fill="#aab1bf">
-    <text x="72" y="436">Local and remote threat intelligence, normalised into</text>
-    <text x="72" y="466">conservative BGP route deltas &#8212; with last-good-state</text>
-    <text x="72" y="496">protection when a feed goes quiet.</text>
+    <text x="72" y="436">Local and remote threat feeds, normalised into</text>
+    <text x="72" y="466">deterministic route deltas with per-community policy</text>
+    <text x="72" y="496">boundaries and last-known-good protection.</text>
   </g>
 
   <!-- facts row -->
   <g font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="18" font-weight="600" fill="#717a89">
-    <text x="72" y="548">Go daemon</text>
+    <text x="72" y="548">Signed APT</text>
     <text x="184" y="548" fill="#2c333f">/</text>
-    <text x="202" y="548">Embedded GoBGP</text>
-    <text x="356" y="548" fill="#2c333f">/</text>
-    <text x="374" y="548">JSON &amp; text feeds</text>
-    <text x="542" y="548" fill="#2c333f">/</text>
-    <text x="560" y="548">IPv4 &amp; IPv6</text>
+    <text x="202" y="548">GHCR image</text>
+    <text x="332" y="548" fill="#2c333f">/</text>
+    <text x="350" y="548">Per-community policy</text>
+    <text x="570" y="548" fill="#2c333f">/</text>
+    <text x="588" y="548">IPv4 &amp; IPv6</text>
   </g>
 
   <!-- bottom hairline + footnote -->
   <rect x="72" y="586" width="1056" height="1" fill="#21262f" />
-  <text x="72" y="612" fill="#717a89" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="15" font-weight="500">Signed Debian &#183; Container &#183; Release archives</text>
+  <text x="72" y="612" fill="#717a89" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="15" font-weight="500">Signed Debian &#183; Container &#183; Visible release provenance</text>
   <text x="1128" y="612" text-anchor="end" fill="#717a89" font-family='"SF Mono", "Menlo", "Consolas", monospace' font-size="14">github.com/netspeedy/blackhole-threats</text>
 </svg>

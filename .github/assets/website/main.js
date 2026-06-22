@@ -1,9 +1,9 @@
 import './style.css';
 
 const fallbackHighlights = [
-  'Fetch threat feeds concurrently and normalize IP prefixes',
-  'Summarise routes by BGP community before publication',
-  'Preserve last good community state when upstream feeds fail',
+  'Normalise local and remote threat feeds into IP prefixes',
+  'Publish deterministic route deltas by BGP community',
+  'Preserve last-known-good routes when upstream feeds fail',
 ];
 
 const defaultSiteURL = process.env.PUBLIC_SITE_URL.replace(/\/?$/, '/');
