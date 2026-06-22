@@ -1,19 +1,19 @@
-# Blackhole Threats
-
 <p align="center">
   <img src="assets/blackhole-threats-readme-hero.png" width="960" alt="blackhole-threats - RTBH route server for controlled BGP blackholes">
 </p>
 
-> A Go-based RTBH route server that turns threat feeds into controlled BGP blackhole announcements.
+<p align="center">
+  <a href="https://github.com/netspeedy/blackhole-threats/actions/workflows/build-and-validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/build-and-validate.yml?branch=main&style=flat-square&label=validate" alt="Validate"></a>
+  <a href="https://github.com/netspeedy/blackhole-threats/actions/workflows/container-image.yml"><img src="https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/container-image.yml?branch=main&style=flat-square&label=container" alt="Container"></a>
+  <a href="https://github.com/netspeedy/blackhole-threats/releases"><img src="https://img.shields.io/github/v/release/netspeedy/blackhole-threats?sort=semver&style=flat-square" alt="Release"></a>
+  <a href="https://netspeedy.github.io/blackhole-threats/"><img src="https://img.shields.io/badge/APT-signed%20repo-A81D33?style=flat-square&logo=debian&logoColor=white" alt="APT Repository"></a>
+  <a href="https://ghcr.io/netspeedy/blackhole-threats"><img src="https://img.shields.io/badge/GHCR-published-2088FF?style=flat-square&logo=github" alt="GHCR"></a>
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.24%2B-00ADD8.svg?style=flat-square&logo=go&logoColor=white" alt="Go"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-2EA043.svg?style=flat-square" alt="License"></a>
+  <a href="https://buymeacoffee.com/soakes"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=000000" alt="Buy Me a Coffee"></a>
+</p>
 
-[![Validate](https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/build-and-validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/netspeedy/blackhole-threats/actions/workflows/build-and-validate.yml)
-[![Container](https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/container-image.yml?branch=main&style=flat-square&label=container)](https://github.com/netspeedy/blackhole-threats/actions/workflows/container-image.yml)
-[![Release](https://img.shields.io/github/v/release/netspeedy/blackhole-threats?sort=semver&style=flat-square)](https://github.com/netspeedy/blackhole-threats/releases)
-[![APT Repository](https://img.shields.io/badge/APT-signed%20repo-A81D33?style=flat-square&logo=debian&logoColor=white)](https://netspeedy.github.io/blackhole-threats/)
-[![GHCR](https://img.shields.io/badge/GHCR-published-2088FF?style=flat-square&logo=github)](https://ghcr.io/netspeedy/blackhole-threats)
-[![Go](https://img.shields.io/badge/Go-1.24%2B-00ADD8.svg?style=flat-square&logo=go&logoColor=white)](https://go.dev/)
-[![License](https://img.shields.io/badge/License-MIT-2EA043.svg?style=flat-square)](LICENSE)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=000000)](https://buymeacoffee.com/soakes)
+---
 
 Built for operators who want one service, one config format, and one release path
 they can actually deploy: source builds, container images, Debian packages,
