@@ -1,5 +1,9 @@
 # Blackhole Threats
 
+<p align="center">
+  <img src="assets/blackhole-threats-readme-hero.png" width="960" alt="blackhole-threats - RTBH route server for controlled BGP blackholes">
+</p>
+
 > A Go-based RTBH route server that turns threat feeds into controlled BGP blackhole announcements.
 
 [![Validate](https://img.shields.io/github/actions/workflow/status/netspeedy/blackhole-threats/build-and-validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/netspeedy/blackhole-threats/actions/workflows/build-and-validate.yml)
@@ -733,6 +737,8 @@ refresh for this repository.
 
 ```text
 blackhole-threats/
+├── assets/
+│   └── blackhole-threats-readme-hero.png
 ├── .github/
 │   ├── assets/
 │   │   └── website/
