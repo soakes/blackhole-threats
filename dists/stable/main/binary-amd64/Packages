@@ -1,0 +1,36 @@
+Package: blackhole-threats
+Version: 1.1.5-1
+Architecture: amd64
+Maintainer: Simon Oakes <813389+soakes@users.noreply.github.com>
+Installed-Size: 17410
+Filename: pool/main/b/blackhole-threats/blackhole-threats_1.1.5-1_amd64.deb
+Size: 4955616
+MD5sum: dad494de787f1a57d6747ee3f81b14a1
+SHA1: 1818f0a07dd21a602bc1e0b08626bc0365ef5376
+SHA256: 9ffea2eaec2acea260a83b4208d676a77c103411150acda48f777611817a7302
+Section: net
+Priority: optional
+Homepage: https://github.com/netspeedy/blackhole-threats
+Description: Threat-feed-driven RTBH route server
+ Stand-alone BGP route server based on GoBGP which downloads IPv4/v6 threat
+ feeds on a periodic basis, summarises them, and maintains them as routes.
+ Routers can then iBGP peer with it and blackhole these routes.
+
+Package: blackhole-threats-dbgsym
+Source: blackhole-threats
+Version: 1.1.5-1
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Simon Oakes <813389+soakes@users.noreply.github.com>
+Installed-Size: 7607
+Depends: blackhole-threats (= 1.1.5-1)
+Filename: pool/main/b/blackhole-threats/blackhole-threats-dbgsym_1.1.5-1_amd64.deb
+Size: 5944708
+MD5sum: d69b6ee5d5b109fcf0efb9fcb5255be5
+SHA1: 80a5bb644add8ffaa165a0d5e8ca36ef85d1652c
+SHA256: cabdac83e8af3ad651dd2ccc3b343bd5be50df631e7e9f4e10ed982c3823e82e
+Section: debug
+Priority: optional
+Description: debug symbols for blackhole-threats
+Build-Ids: 2d57399190e60d041cc4d492315bfca05a4561a9
+
