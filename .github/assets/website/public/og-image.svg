@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="bt-og-title bt-og-desc">
+  <title id="bt-og-title">Blackhole Threats share card</title>
+  <desc id="bt-og-desc">Dark branded share card for blackhole-threats, a controlled RTBH BGP route server.</desc>
+
+  <defs>
+    <radialGradient id="bt-og-bg" cx="30%" cy="30%" r="90%">
+      <stop offset="0" stop-color="#141622" />
+      <stop offset="0.5" stop-color="#0c0e14" />
+      <stop offset="1" stop-color="#070809" />
+    </radialGradient>
+    <radialGradient id="bt-og-glow" cx="82%" cy="48%" r="40%">
+      <stop offset="0" stop-color="#ff4d63" stop-opacity="0.34" />
+      <stop offset="0.45" stop-color="#ff4d63" stop-opacity="0.10" />
+      <stop offset="1" stop-color="#ff4d63" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="bt-og-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ff7a8a" />
+      <stop offset="1" stop-color="#ff4d63" />
+    </radialGradient>
+    <radialGradient id="bt-og-hole" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#000" />
+      <stop offset="0.7" stop-color="#050609" />
+      <stop offset="1" stop-color="#0c0e14" />
+    </radialGradient>
+    <pattern id="bt-og-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#f2f4f8" stroke-opacity="0.035" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="630" fill="url(#bt-og-bg)" />
+  <rect width="1200" height="630" fill="url(#bt-og-grid)" />
+  <rect width="1200" height="630" fill="url(#bt-og-glow)" />
+
+  <!-- decorative blackhole on the right (no text, nothing to overflow) -->
+  <g transform="translate(1010 315)" opacity="0.95">
+    <circle r="300" fill="none" stroke="#ff4d63" stroke-opacity="0.06" stroke-width="2" />
+    <circle r="232" fill="none" stroke="#ff4d63" stroke-opacity="0.10" stroke-width="2" />
+    <circle r="168" fill="none" stroke="#ff4d63" stroke-opacity="0.16" stroke-width="2.5" />
+    <circle r="112" fill="none" stroke="#ff7a8a" stroke-opacity="0.50" stroke-width="3" />
+    <circle r="92" fill="none" stroke="#ff4d63" stroke-opacity="0.85" stroke-width="4" />
+    <circle r="80" fill="url(#bt-og-hole)" />
+    <circle r="80" fill="none" stroke="#ff7a8a" stroke-opacity="0.30" stroke-width="1.5" />
+  </g>
+
+  <!-- top accent hairline -->
+  <rect x="0" y="0" width="1200" height="3" fill="#ff4d63" opacity="0.85" />
+
+  <!-- brand mark + wordmark -->
+  <g transform="translate(72 56)">
+    <circle cx="22" cy="22" r="20" fill="none" stroke="#ff4d63" stroke-opacity="0.22" stroke-width="2" />
+    <circle cx="22" cy="22" r="13.5" fill="none" stroke="#ff4d63" stroke-opacity="0.42" stroke-width="2" />
+    <circle cx="22" cy="22" r="8" fill="url(#bt-og-core)" />
+    <text x="58" y="30" fill="#f2f4f8" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="23" font-weight="700">blackhole-threats</text>
+  </g>
+
+  <!-- eyebrow -->
+  <g transform="translate(72 188)">
+    <circle cx="5" cy="-5" r="5" fill="#ff4d63" />
+    <text x="20" y="0" fill="#aab1bf" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="18" font-weight="600" letter-spacing="3.2">RTBH ROUTE SERVER FOR NETWORK OPERATORS</text>
+  </g>
+
+  <!-- title -->
+  <text x="72" y="276" fill="#f2f4f8" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="84" font-weight="800" letter-spacing="-2">Blackhole Threats</text>
+
+  <!-- subtitle -->
+  <text x="72" y="338" fill="#f2f4f8" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="40" font-weight="650">Threat feeds in.</text>
+  <text x="72" y="386" fill="#ff4d63" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="40" font-weight="650">Controlled blackholes out.</text>
+
+  <!-- lead -->
+  <g font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="22" fill="#aab1bf">
+    <text x="72" y="436">Local and remote threat intelligence, normalised into</text>
+    <text x="72" y="466">conservative BGP route deltas &#8212; with last-good-state</text>
+    <text x="72" y="496">protection when a feed goes quiet.</text>
+  </g>
+
+  <!-- facts row -->
+  <g font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="18" font-weight="600" fill="#717a89">
+    <text x="72" y="548">Go daemon</text>
+    <text x="184" y="548" fill="#2c333f">/</text>
+    <text x="202" y="548">Embedded GoBGP</text>
+    <text x="356" y="548" fill="#2c333f">/</text>
+    <text x="374" y="548">JSON &amp; text feeds</text>
+    <text x="542" y="548" fill="#2c333f">/</text>
+    <text x="560" y="548">IPv4 &amp; IPv6</text>
+  </g>
+
+  <!-- bottom hairline + footnote -->
+  <rect x="72" y="586" width="1056" height="1" fill="#21262f" />
+  <text x="72" y="612" fill="#717a89" font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="15" font-weight="500">Signed Debian &#183; Container &#183; Release archives</text>
+  <text x="1128" y="612" text-anchor="end" fill="#717a89" font-family='"SF Mono", "Menlo", "Consolas", monospace' font-size="14">github.com/netspeedy/blackhole-threats</text>
+</svg>

@@ -13,6 +13,8 @@ const requiredFiles = [
   "main.js",
   "style.css",
   "vite.config.js",
+  "public/og-image.svg",
+  "public/og-image.png",
 ];
 
 const requiredDomIds = [
@@ -149,6 +151,17 @@ assert(
 
 assert(indexHtml.includes('href="#install"'), 'index.html must retain the in-page install anchor link');
 assert(indexHtml.includes('id="install"'), 'index.html must retain the install section target');
+
+const siteUrl = "https://netspeedy.github.io/blackhole-threats/";
+const ogImageUrl = "https://netspeedy.github.io/blackhole-threats/og-image.png?v=1";
+assert(indexHtml.includes(`<link rel="canonical" href="${siteUrl}" />`), "index.html must declare a canonical URL");
+assert(indexHtml.includes('name="robots" content="index, follow, max-image-preview:large"'), "index.html must allow large image previews for social crawlers");
+assert(indexHtml.includes(`property="og:url" content="${siteUrl}"`), "index.html must declare the og:url");
+assert(indexHtml.includes(`property="og:image" content="${ogImageUrl}"`), "index.html must reference the absolute og:image URL");
+assert(indexHtml.includes('property="og:image:width" content="1200"'), "index.html must declare the og:image width");
+assert(indexHtml.includes('property="og:image:height" content="630"'), "index.html must declare the og:image height");
+assert(indexHtml.includes('name="twitter:card" content="summary_large_image"'), "index.html must declare a large-image Twitter card");
+assert(indexHtml.includes(`name="twitter:image" content="${ogImageUrl}"`), "index.html must reference the absolute twitter:image URL");
 
 for (const requiredInstallFact of [
   "amd64",
