@@ -184,6 +184,40 @@ Validation:
 ./dist/blackhole-threats -conf ./blackhole-threats.yaml -once
 ```
 
+## RouterOS Policy Examples
+
+These RouterOS filter snippets are starting points for accepting routes from
+`blackhole-threats` and applying local blackhole policy. Adjust the ASN,
+addresses, communities, and policy actions to match your network.
+
+### RouterOS v6
+
+```text
+/routing bgp instance
+set default as=64512
+/routing bgp peer
+add address-families=ip,ipv6 allow-as-in=2 in-filter=threats-in name=threats remote-address=\
+    192.168.1.2 ttl=default
+/routing filter
+add action=accept address-family=ip bgp-communities=64512:666 chain=threats-in comment=\
+    "Blackhole IPv4 C&C and don't route or peer addresses" protocol=bgp set-type=blackhole
+add address-family=ipv6 bgp-communities=64512:666 chain=threats-in comment=\
+    "Unreachable IPv6 C&C and don't route or peer addresses" protocol=bgp set-type=unreachable
+```
+
+### RouterOS v7
+
+```text
+/routing bgp template
+set default as=64512 disabled=no routing-table=main
+/routing bgp connection
+add address-families=ip,ipv6 as=64512 disabled=no input.allow-as=2 .filter=threats-in local.role=ibgp \
+    name=threats remote.address=192.168.1.2 routing-table=main templates=default
+/routing filter rule
+add chain=threats-in comment="Blackhole C&C and don't route or peer addresses" disabled=no rule=\
+    "if (bgp-communities equal 64512:666) {set blackhole yes; accept}"
+```
+
 ## Safe Rollout Pattern
 
 This pattern works well regardless of packaging method:
