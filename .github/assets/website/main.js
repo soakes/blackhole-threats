@@ -1,11 +1,13 @@
 import './style.css';
 
-// Fetch env variables injected by Vite via define plugin
 const fallbackHighlights = [
-  'Fetch feeds concurrently & normalize IPs',
-  'Summarise networks to communities',
-  'Export concise BGP route deltas',
+  'Fetch threat feeds concurrently and normalize IP prefixes',
+  'Summarise routes by BGP community before publication',
+  'Preserve last good community state when upstream feeds fail',
 ];
+
+const defaultSiteURL = process.env.PUBLIC_SITE_URL.replace(/\/?$/, '/');
+const buildHighlightsValue = process.env.PUBLIC_RELEASE_HIGHLIGHTS_JSON;
 
 function normalizeHighlights(value) {
   if (!Array.isArray(value)) {
@@ -37,26 +39,29 @@ function hasBuildHighlights(value) {
   }
 }
 
-const buildHighlightsValue = process.env.PUBLIC_RELEASE_HIGHLIGHTS_JSON;
 const hasExplicitBuildHighlights = hasBuildHighlights(buildHighlightsValue);
 
 const defaultMetadata = {
-  siteUrl: process.env.PUBLIC_SITE_URL.replace(/\/?$/, '/'),
+  siteUrl: defaultSiteURL,
   releaseVersion: process.env.PUBLIC_RELEASE_VERSION,
   commit: process.env.PUBLIC_COMMIT,
   buildDate: process.env.PUBLIC_BUILD_DATE,
   aptFingerprint: process.env.PUBLIC_APT_FINGERPRINT,
   releaseHighlights: parseBuildHighlights(buildHighlightsValue),
+  githubUrl: 'https://github.com/netspeedy/blackhole-threats',
+  releaseUrl: 'https://github.com/netspeedy/blackhole-threats/releases',
+  containerUrl: 'https://ghcr.io/netspeedy/blackhole-threats',
+  containerImage: 'ghcr.io/netspeedy/blackhole-threats',
 };
 
 function formatBuildDate(value) {
   const parsedBuildDate = new Date(value);
   return Number.isNaN(parsedBuildDate.valueOf())
     ? value
-    : `${new Intl.DateTimeFormat("en-GB", {
-        dateStyle: "long",
-        timeStyle: "short",
-        timeZone: "UTC",
+    : `${new Intl.DateTimeFormat('en-GB', {
+        dateStyle: 'long',
+        timeStyle: 'short',
+        timeZone: 'UTC',
       }).format(parsedBuildDate)} UTC`;
 }
 
@@ -88,6 +93,7 @@ function normalizeMetadata(value = {}) {
   const commit = `${value.commit || defaultMetadata.commit}`;
   const buildDate = `${value.build_date || value.buildDate || defaultMetadata.buildDate}`;
   const aptFingerprint = `${value.apt_fingerprint || value.aptFingerprint || defaultMetadata.aptFingerprint}`;
+  const containerImage = `${value.container_image || value.containerImage || defaultMetadata.containerImage}`;
 
   return {
     siteUrl,
@@ -97,6 +103,10 @@ function normalizeMetadata(value = {}) {
     formattedBuildDate: formatBuildDate(buildDate),
     aptFingerprint,
     releaseHighlights: normalizeHighlights(value.release_highlights || value.releaseHighlights),
+    githubUrl: value.github_url || value.githubUrl || defaultMetadata.githubUrl,
+    releaseUrl: value.release_url || value.releaseUrl || defaultMetadata.releaseUrl,
+    containerUrl: value.container_url || value.containerUrl || defaultMetadata.containerUrl,
+    containerImage,
   };
 }
 
@@ -109,10 +119,7 @@ function shouldRenderFetchedMetadata(metadata) {
 }
 
 function mergeFetchedMetadata(metadata) {
-  if (
-    hasExplicitBuildHighlights &&
-    metadata.releaseVersion === defaultMetadata.releaseVersion
-  ) {
+  if (hasExplicitBuildHighlights && metadata.releaseVersion === defaultMetadata.releaseVersion) {
     return {
       ...metadata,
       releaseHighlights: defaultMetadata.releaseHighlights,
@@ -122,52 +129,102 @@ function mergeFetchedMetadata(metadata) {
   return metadata;
 }
 
-function renderMetadata(metadata) {
-  const mappings = {
-    'ui-version': metadata.releaseVersion,
-    'ui-commit': metadata.shortCommit,
-    'ui-date': metadata.formattedBuildDate,
-    'ui-fingerprint': metadata.aptFingerprint,
-    'footer-version': metadata.releaseVersion,
-    'footer-commit': metadata.shortCommit,
-  };
-
-  for (const [id, value] of Object.entries(mappings)) {
-    const el = document.getElementById(id);
-    if (el) {
-      el.textContent = value;
-    }
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = value;
   }
+}
 
-  const siteUrlLink = document.getElementById('site-url-link');
-  if (siteUrlLink) {
-    siteUrlLink.href = metadata.siteUrl;
+function setHref(id, value) {
+  const element = document.getElementById(id);
+  if (element && value) {
+    element.href = value;
   }
+}
 
-  const aptLink = document.getElementById('nav-apt-link');
-  if (aptLink) {
-    aptLink.href = metadata.siteUrl;
-  }
+function releaseTag(metadata) {
+  return parseStableTag(metadata.releaseVersion) ? metadata.releaseVersion : 'latest';
+}
 
-  const aptCodeContainer = document.getElementById('apt-code-container');
-  if (aptCodeContainer) {
-    aptCodeContainer.innerHTML = `
-<pre><code>sudo install -d -m 0755 /etc/apt/keyrings
+function renderCommands(metadata) {
+  const keyPath = '/etc/apt/keyrings/blackhole-threats-archive-keyring.gpg';
+
+  setText(
+    'apt-command',
+    `sudo install -d -m 0755 /etc/apt/keyrings
 curl -fsSL ${metadata.siteUrl}blackhole-threats-archive-keyring.gpg \\
-  | sudo tee /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg >/dev/null
+  | sudo tee ${keyPath} >/dev/null
 
-sudo tee /etc/apt/sources.list.d/blackhole-threats.sources >/dev/null &lt;&lt;'EOF'
+curl -fsSL ${metadata.siteUrl}blackhole-threats-archive-keyring.fingerprint.txt
+
+# Verify the fingerprint matches the expected archive key before proceeding.
+
+sudo tee /etc/apt/sources.list.d/blackhole-threats.sources >/dev/null <<'EOF'
 Types: deb deb-src
 URIs: ${metadata.siteUrl}
 Suites: stable
 Components: main
-Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg
+Signed-By: ${keyPath}
 EOF
 
-sudo apt update && sudo apt install blackhole-threats</code></pre>`;
-  }
+sudo apt update
+sudo apt install blackhole-threats`,
+  );
 
-  const highlightsList = document.getElementById('ui-highlights');
+  setText(
+    'container-command',
+    `docker pull ${metadata.containerImage}:${releaseTag(metadata)}
+docker run -d \\
+  -p 179:179 \\
+  -v "$PWD/config:/config" \\
+  --name blackhole-threats \\
+  ${metadata.containerImage}:${releaseTag(metadata)}`,
+  );
+
+  setText(
+    'archive-command',
+    `curl -LO ${metadata.releaseUrl}/latest/download/sha256sums.txt
+# Download the release artifact that matches your host architecture.
+# Verify it against sha256sums.txt before installing.`,
+  );
+
+  setText(
+    'source-command',
+    `git clone ${metadata.githubUrl}.git
+cd blackhole-threats
+make build
+./dist/blackhole-threats -conf examples/blackhole-threats.yaml -check-config`,
+  );
+
+  setText(
+    'apt-fingerprint-row',
+    metadata.aptFingerprint ? `Archive fingerprint: ${metadata.aptFingerprint}` : '',
+  );
+}
+
+function renderMetadata(metadata) {
+  setText('release-version', metadata.releaseVersion);
+  setText('release-commit', metadata.shortCommit);
+  setText('release-date', metadata.formattedBuildDate);
+  setText('release-fingerprint', metadata.aptFingerprint);
+  setText('footer-version', metadata.releaseVersion);
+  setText('footer-commit', metadata.shortCommit);
+
+  setHref('site-home-link', metadata.siteUrl);
+  setHref('nav-github-link', metadata.githubUrl);
+  setHref('nav-releases-link', metadata.releaseUrl);
+  setHref('nav-container-link', metadata.containerUrl);
+  setHref('nav-apt-link', `${metadata.siteUrl}#install`);
+  setHref('install-apt-link', `${metadata.siteUrl}#install`);
+  setHref('install-container-link', metadata.containerUrl);
+  setHref('install-release-link', metadata.releaseUrl);
+  setHref('install-source-link', metadata.githubUrl);
+  setHref('footer-release-link', metadata.releaseUrl);
+  setHref('footer-container-link', metadata.containerUrl);
+  setHref('footer-apt-link', `${metadata.siteUrl}#install`);
+
+  const highlightsList = document.getElementById('release-highlights');
   if (highlightsList) {
     highlightsList.replaceChildren(
       ...metadata.releaseHighlights.map((highlight) => {
@@ -177,52 +234,104 @@ sudo apt update && sudo apt install blackhole-threats</code></pre>`;
       }),
     );
   }
+
+  renderCommands(metadata);
 }
 
-// Inject into DOM
-document.addEventListener('DOMContentLoaded', () => {
+async function loadMetadata() {
   renderMetadata(normalizeMetadata(defaultMetadata));
 
-  fetch('./website-metadata.json', { cache: 'no-store' })
-    .then((response) => {
-      if (!response.ok) {
-        return null;
-      }
-      return response.json();
-    })
-    .then((metadata) => {
-      if (metadata) {
-        const normalizedMetadata = normalizeMetadata(metadata);
-        if (shouldRenderFetchedMetadata(normalizedMetadata)) {
-          renderMetadata(mergeFetchedMetadata(normalizedMetadata));
-        }
-      }
-    })
-    .catch(() => {
-      // Keep the build-time defaults if the published metadata file is absent.
-    });
-
-  // Intersection Observer for scroll animations (optional extra flair if we had components lower down)
-  const observerOptions = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 0.1
-  };
-  
-  const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('fade-in');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, observerOptions);
-
-  document.querySelectorAll('.glass-card').forEach(card => {
-    // If they aren't already animated on load, observe them
-    if(!card.closest('.stagger-in') && !card.closest('.fade-in')) {
-      card.style.opacity = '0';
-      observer.observe(card);
+  try {
+    const response = await fetch('./website-metadata.json', { cache: 'no-store' });
+    if (!response.ok) {
+      return;
     }
+
+    const normalizedMetadata = normalizeMetadata(await response.json());
+    if (shouldRenderFetchedMetadata(normalizedMetadata)) {
+      renderMetadata(mergeFetchedMetadata(normalizedMetadata));
+    }
+  } catch {
+    // Keep the build-time defaults if the published metadata file is absent.
+  }
+}
+
+function selectInstallTab(container, tabID) {
+  container.querySelectorAll('.tab').forEach((tab) => {
+    const active = tab.dataset.tab === tabID;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', active ? 'true' : 'false');
   });
+
+  container.querySelectorAll('.tab-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.id === `panel-${tabID}`);
+  });
+}
+
+function wireTabs() {
+  document.querySelectorAll('.install-tabs').forEach((container) => {
+    container.addEventListener('click', (event) => {
+      const button = event.target.closest('.tab');
+      if (!button) {
+        return;
+      }
+
+      selectInstallTab(container, button.dataset.tab);
+    });
+  });
+
+  document.querySelectorAll('[data-install-tab]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const container = document.querySelector('.install-tabs');
+      if (container) {
+        selectInstallTab(container, link.dataset.installTab);
+      }
+    });
+  });
+}
+
+function showCopiedFeedback(button) {
+  const previous = button.textContent;
+  button.classList.add('copied');
+  button.textContent = 'Copied';
+  setTimeout(() => {
+    button.classList.remove('copied');
+    button.textContent = previous;
+  }, 1400);
+}
+
+function wireCopyButtons() {
+  document.querySelectorAll('[data-copy-target]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!target) {
+        return;
+      }
+
+      const text = target.textContent ?? '';
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(target);
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          document.execCommand('copy');
+          selection?.removeAllRanges();
+        }
+        showCopiedFeedback(button);
+      } catch {
+        showCopiedFeedback(button);
+      }
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  wireTabs();
+  wireCopyButtons();
+  void loadMetadata();
 });

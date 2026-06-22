@@ -16,14 +16,31 @@ const requiredFiles = [
 ];
 
 const requiredDomIds = [
-  "site-url-link",
+  "site-home-link",
+  "nav-github-link",
+  "nav-releases-link",
   "nav-apt-link",
-  "ui-version",
-  "ui-commit",
-  "ui-date",
-  "ui-fingerprint",
-  "ui-highlights",
-  "apt-code-container",
+  "nav-container-link",
+  "nav-docs-link",
+  "hero-docs-link",
+  "release-version",
+  "release-commit",
+  "release-date",
+  "release-fingerprint",
+  "release-highlights",
+  "apt-command",
+  "apt-fingerprint-row",
+  "container-command",
+  "archive-command",
+  "source-command",
+  "install-apt-link",
+  "install-container-link",
+  "install-release-link",
+  "install-source-link",
+  "footer-release-link",
+  "footer-apt-link",
+  "footer-container-link",
+  "footer-docs-link",
   "footer-version",
   "footer-commit",
 ];
@@ -106,6 +123,19 @@ for (const envBinding of requiredEnvBindings) {
 for (const domId of requiredDomIds) {
   assert(indexHtml.includes(`id="${domId}"`), `index.html is missing required id="${domId}"`);
 }
+
+for (const tabId of ["apt", "container", "archives", "source"]) {
+  assert(indexHtml.includes(`data-tab="${tabId}"`), `index.html is missing data-tab="${tabId}"`);
+  assert(indexHtml.includes(`id="panel-${tabId}"`), `index.html is missing id="panel-${tabId}"`);
+}
+
+for (const installTab of ["apt", "container", "archives", "source"]) {
+  assert(indexHtml.includes(`data-install-tab="${installTab}"`), `index.html is missing data-install-tab="${installTab}"`);
+}
+
+assert(mainJs.includes("website-metadata.json"), "main.js must keep website-metadata.json support for Pages refreshes");
+assert(mainJs.includes("blackhole-threats-archive-keyring.fingerprint.txt"), "main.js must render the APT fingerprint verification command");
+assert(mainJs.includes("Types: deb deb-src"), "main.js must keep deb-src support in the APT install command");
 
 const rootRelativeAssets = findRootRelativeLocalAssets(indexHtml);
 assert(

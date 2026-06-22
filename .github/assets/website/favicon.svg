@@ -1,25 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Blackhole Threats favicon">
   <defs>
-    <linearGradient id="bt-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8a2be2"/>
-      <stop offset="1" stop-color="#00f0ff"/>
-    </linearGradient>
-    <filter id="bt-shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#00f0ff" flood-opacity="0.18"/>
-    </filter>
+    <radialGradient id="bt-bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#161b26"/>
+      <stop offset="1" stop-color="#070809"/>
+    </radialGradient>
+    <radialGradient id="bt-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ff7a8a"/>
+      <stop offset="1" stop-color="#ff4d63"/>
+    </radialGradient>
   </defs>
 
-  <rect width="64" height="64" rx="18" fill="#030712"/>
-  <rect x="6" y="6" width="52" height="52" rx="14" fill="url(#bt-gradient)" filter="url(#bt-shadow)"/>
-  <rect x="6.5" y="6.5" width="51" height="51" rx="13.5" fill="none" stroke="rgba(249,250,251,0.16)"/>
-  <text
-    x="32"
-    y="39"
-    text-anchor="middle"
-    fill="#020617"
-    font-family="Outfit, Inter, Arial, sans-serif"
-    font-size="25"
-    font-weight="800"
-    letter-spacing="-1.2"
-  >BT</text>
+  <rect width="64" height="64" rx="16" fill="url(#bt-bg)"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#ff4d63" stroke-opacity="0.16" stroke-width="2.5"/>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="#ff4d63" stroke-opacity="0.32" stroke-width="2.5"/>
+  <circle cx="32" cy="32" r="9.5" fill="url(#bt-core)"/>
+  <circle cx="32" cy="32" r="9.5" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
 </svg>

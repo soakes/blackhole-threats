@@ -3,169 +3,240 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Blackhole Threats - Go-based RTBH daemon with first-party Debian, container, and signed APT distribution." />
-    <meta name="theme-color" content="#030712" />
+    <meta
+      name="description"
+      content="Blackhole Threats turns local and remote threat feeds into controlled RTBH BGP announcements with signed Debian and container delivery."
+    />
+    <meta name="theme-color" content="#08090d" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <!-- Modern Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
-    <title>Blackhole Threats | RTBH Route Automation</title>
+    <title>Blackhole Threats | Controlled RTBH route automation</title>
     <script type="module" src="./main.js"></script>
   </head>
   <body>
-    <!-- Background glows -->
-    <div class="glow-bg glow-bg-primary"></div>
-    <div class="glow-bg glow-bg-secondary"></div>
+    <div class="aura" aria-hidden="true"></div>
 
-    <header class="masthead wrapper flex j-between a-center fade-in">
-      <a class="brand" href="#" id="site-url-link">
-        <div class="brand-mark">BT</div>
-        <div class="brand-copy">
-          <strong>Blackhole Threats</strong>
-          <small>RTBH route automation</small>
-        </div>
-      </a>
-
-      <nav class="masthead-links hide-mobile">
-        <a href="https://github.com/netspeedy/blackhole-threats/releases" class="nav-link">Releases</a>
-        <a href="https://ghcr.io/netspeedy/blackhole-threats" class="nav-link">GHCR</a>
-        <a href="#" class="nav-link" id="nav-apt-link">APT</a>
-        <a href="https://github.com/netspeedy/blackhole-threats#readme" class="nav-link">README</a>
-        <a href="https://github.com/netspeedy/blackhole-threats" class="nav-link icon-link">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#" id="site-home-link" aria-label="Blackhole Threats home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none">
+            <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-opacity="0.18" stroke-width="1.5" />
+            <circle cx="16" cy="16" r="9.5" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.5" />
+            <circle cx="16" cy="16" r="5.5" fill="currentColor" />
+          </svg>
+          <span>blackhole-threats</span>
         </a>
-      </nav>
+        <nav class="top-nav" aria-label="Primary navigation">
+          <a href="#install" id="nav-apt-link" data-install-tab="apt">APT</a>
+          <a href="https://ghcr.io/netspeedy/blackhole-threats" id="nav-container-link" data-install-tab="container">Container</a>
+          <a href="https://github.com/netspeedy/blackhole-threats/releases" id="nav-releases-link" data-install-tab="archives">Releases</a>
+          <a href="https://github.com/netspeedy/blackhole-threats/tree/main/docs" id="nav-docs-link">Docs</a>
+          <a href="https://github.com/netspeedy/blackhole-threats" id="nav-github-link" class="nav-cta" aria-label="View on GitHub">
+            <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            <span class="nav-cta-label">GitHub</span>
+          </a>
+        </nav>
+      </div>
     </header>
 
     <main>
-      <!-- Hero Section -->
-      <section class="hero wrapper fade-in" style="animation-delay: 0.1s;">
-        <div class="hero-content">
-          <div class="hero-chip"><span>Cybersecurity Infrastructure</span></div>
-          <h1 class="hero-title">Protect networks with<br><span class="text-gradient">automated RTBH filtering</span></h1>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot"></span>RTBH route server for network operators</p>
+          <h1 id="hero-title">Threat feeds in.<br /><span class="accent">Controlled blackholes</span> out.</h1>
           <p class="hero-lead">
-            Ingest local or remote threat feeds, compute route deltas, and publish controlled BGP blackhole announcements. First-party Debian packages, GHCR images, and a public APT repository.
+            blackhole-threats reads local and remote threat intelligence, normalises IPv4 and IPv6
+            prefixes, and announces conservative BGP route deltas &mdash; with last-good-state
+            protection when a feed goes quiet.
           </p>
-          <div class="hero-actions">
-            <a href="#install" class="btn btn-primary">Get Started</a>
-            <a href="https://github.com/netspeedy/blackhole-threats/blob/main/docs/architecture.md" class="btn btn-secondary">Architecture</a>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="btn btn-primary" href="#install" data-install-tab="apt">
+              Install from signed APT
+              <svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/netspeedy/blackhole-threats#readme" id="hero-docs-link">Read the operator guide</a>
+          </div>
+          <ul class="hero-facts" aria-label="Runtime capabilities">
+            <li>Go daemon</li>
+            <li>Embedded GoBGP</li>
+            <li>JSON &amp; text feeds</li>
+            <li>IPv4 / IPv6</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual" aria-label="Service refresh output preview">
+          <div class="terminal">
+            <div class="term-bar">
+              <span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="term-title">blackhole-threats &mdash; refresh.log</span>
+              <span class="term-live"><span class="live-dot" aria-hidden="true"></span>live</span>
+            </div>
+            <pre class="term-body"><code><span class="term-banner">blackhole-threats <span class="v">v1.2.3</span> &middot; <span class="v">AS64520</span></span>
+<b class="sev sev-info">INFO</b>  feeds loaded          <span class="k">count=</span><span class="num">5</span>  <span class="k">community=</span><span class="v">64520:666</span>
+<b class="sev sev-info">INFO</b>  prefixes parsed       <span class="k">ipv4=</span><span class="num">98,421</span>  <span class="k">ipv6=</span><span class="num">30,321</span>
+<b class="sev sev-info">INFO</b>  routes summarised     <span class="k">total=</span><span class="num">128,742</span>  <span class="k">overlaps=</span><span class="num">-421</span>
+<b class="sev sev-info">INFO</b>  route delta           <span class="k">announced=</span><span class="num">1,245</span>  <span class="k">withdrawn=</span><span class="num">312</span>
+<b class="sev sev-warn">WARN</b>  feed retry deferred   <span class="k">failed_feeds=</span><span class="num">1</span>  <span class="k">carry_forward=</span><span class="v">true</span>
+<b class="sev sev-info">INFO</b>  refresh complete      <span class="k">duration=</span><span class="num">412ms</span>  <span class="k">next_refresh=</span><span class="num">5m</span><span class="cursor" aria-hidden="true"></span></code></pre>
+          </div>
+          <p class="term-caption">Illustrative refresh output &mdash; values shown for orientation.</p>
+        </div>
+      </section>
+
+      <section class="release-band wrapper" aria-labelledby="release-heading">
+        <div class="section-head">
+          <p class="eyebrow">Current release</p>
+          <h2 id="release-heading">Operator-grade artifacts, signed and reproducible.</h2>
+        </div>
+        <div class="release-grid">
+          <div class="release-card release-card--lead">
+            <span>Version</span>
+            <strong id="release-version">---</strong>
+          </div>
+          <div class="release-card">
+            <span>Commit</span>
+            <strong id="release-commit" class="mono">---</strong>
+          </div>
+          <div class="release-card">
+            <span>Build date</span>
+            <strong id="release-date">---</strong>
+          </div>
+          <div class="release-card release-card--fp">
+            <span>APT signing key</span>
+            <strong id="release-fingerprint" class="mono">---</strong>
           </div>
         </div>
-        
-        <div class="hero-rail glass-card stagger-in">
-          <h3 class="rail-title">Live Build Metadata</h3>
-          <div class="meta-grid">
-            <div class="meta-item">
-              <span class="meta-label">Latest stable</span>
-              <span class="meta-value text-gradient-alt" id="ui-version">Loading...</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Release commit</span>
-              <span class="meta-value font-mono" id="ui-commit">---</span>
-            </div>
-          </div>
-          <div class="meta-block">
-            <span class="meta-label">Published UTC</span>
-            <span class="meta-value text-sm" id="ui-date">---</span>
-          </div>
-          <div class="meta-block">
-            <span class="meta-label">Archive key fingerprint</span>
-            <span class="meta-value font-mono text-xs text-muted" id="ui-fingerprint">---</span>
-          </div>
-          <hr class="dim-divider">
-          <ul class="bullet-list" id="ui-highlights">
+        <div class="release-highlights-card">
+          <span class="highlights-title">Release highlights</span>
+          <ul id="release-highlights" class="highlights">
             <li>Loading release highlights...</li>
           </ul>
         </div>
       </section>
 
-      <!-- Highlights Section -->
-      <section class="highlights wrapper stagger-in">
-        <div class="glass-card flex-row">
-          <div class="highlight-item">
-            <span class="h-label">Purpose</span>
-            <strong>RTBH automation</strong>
-            <p>Normalize threat feeds into controlled BGP state.</p>
-          </div>
-          <div class="highlight-item">
-            <span class="h-label">Distribution</span>
-            <strong>APT, GHCR, source</strong>
-            <p>One core service, several operator-ready paths.</p>
-          </div>
-          <div class="highlight-item">
-            <span class="h-label">Trust</span>
-            <strong>Signed Debian repo</strong>
-            <p>Public key and fingerprint shipped reliably.</p>
-          </div>
+      <section class="capabilities wrapper" aria-labelledby="capabilities-heading">
+        <div class="section-head">
+          <p class="eyebrow">How it runs</p>
+          <h2 id="capabilities-heading">A small, auditable refresh loop with conservative failure handling.</h2>
+        </div>
+        <div class="capability-grid">
+          <article class="capability-card">
+            <span class="cap-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 14a4 4 0 010-8 5 5 0 019.6-1.5A4.5 4.5 0 0118 14H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 11v6m0 0l-2.2-2.2M12 17l2.2-2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Ingest mixed feeds</h3>
+            <p>Read local files, HTTP, and HTTPS sources in plain text, JSON arrays, JSONL, or NDJSON.</p>
+          </article>
+          <article class="capability-card">
+            <span class="cap-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h7M4 12h5M4 17h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M15 5l5 5-5 5M20 10h-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 14l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0"/></svg>
+            </span>
+            <h3>Publish route deltas</h3>
+            <p>Build the desired table, compare to active state, then withdraw stale routes and announce changes only.</p>
+          </article>
+          <article class="capability-card">
+            <span class="cap-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 12l4-4h6l8 8-4 4-8-8v-0z M9 8l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="15" cy="14" r="1.4" fill="currentColor"/></svg>
+            </span>
+            <h3>Respect communities</h3>
+            <p>Group feeds by BGP community so policy boundaries stay explicit and auditable on the wire.</p>
+          </article>
+          <article class="capability-card">
+            <span class="cap-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Carry forward safely</h3>
+            <p>When a community refresh fails, preserve its last known-good routes and retry on the next cycle.</p>
+          </article>
         </div>
       </section>
 
-      <!-- Install Section -->
-      <section id="install" class="install-section wrapper fade-in">
-        <div class="section-heading">
-          <p class="eyebrow">Deploy Seamlessly</p>
-          <h2>Pick your delivery path.</h2>
+      <section id="install" class="install wrapper" aria-labelledby="install-heading">
+        <div class="section-head section-head--split">
+          <div>
+            <p class="eyebrow">Install</p>
+            <h2 id="install-heading">Pick the path that matches the host.</h2>
+          </div>
+          <p class="section-aside">Signed APT is the recommended path for long-running Debian-family hosts. Containers, release archives, and source builds stay first-class options.</p>
         </div>
 
-        <div class="grid-layout">
-          <div class="install-card glass-card hover-lift">
-            <div class="card-head flex j-between a-center">
-              <h3>Signed APT (Recommended)</h3>
-              <span class="badge primary-badge">Debian</span>
-            </div>
-            <p class="card-desc">The cleanest production path for apt-secure verification and updates.</p>
-            <div class="code-block" id="apt-code-container">
-<!-- Wait to populate via JS for dynamic site URL -->
-<pre><code>sudo install -d -m 0755 /etc/apt/keyrings
-curl -fsSL https://netspeedy.github.io/blackhole-threats/blackhole-threats-archive-keyring.gpg \
-| sudo tee /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg >/dev/null
-
-sudo tee /etc/apt/sources.list.d/blackhole-threats.sources >/dev/null &lt;&lt;'EOF'
-Types: deb deb-src
-URIs: https://netspeedy.github.io/blackhole-threats/
-Suites: stable
-Components: main
-Signed-By: /etc/apt/keyrings/blackhole-threats-archive-keyring.gpg
-EOF
-
-sudo apt update && sudo apt install blackhole-threats</code></pre>
-            </div>
+        <div class="install-tabs">
+          <div class="tab-bar" role="tablist" aria-label="Installation methods">
+            <button class="tab active" type="button" role="tab" data-tab="apt" aria-selected="true">Signed APT</button>
+            <button class="tab" type="button" role="tab" data-tab="container" aria-selected="false">Container</button>
+            <button class="tab" type="button" role="tab" data-tab="archives" aria-selected="false">Archives</button>
+            <button class="tab" type="button" role="tab" data-tab="source" aria-selected="false">Source</button>
           </div>
-
-          <div class="install-card glass-card hover-lift">
-            <div class="card-head flex j-between a-center">
-              <h3>GHCR runtime</h3>
-              <span class="badge secondary-badge">Container</span>
-            </div>
-            <p class="card-desc">Use the published multi-arch image anywhere Docker runs.</p>
+          <div class="tab-panel active" id="panel-apt" role="tabpanel">
             <div class="code-block">
-<pre><code>docker pull ghcr.io/netspeedy/blackhole-threats:latest
-
-docker run --rm -p 179:179 \
-  -v "$PWD/config.yaml:/config/blackhole-threats.yaml:ro" \
-  ghcr.io/netspeedy/blackhole-threats:latest</code></pre>
+              <div class="code-head"><span class="code-lang">bash</span><button class="copy-btn" type="button" data-copy-target="apt-command">Copy</button></div>
+              <pre><code id="apt-command">Loading signed APT commands...</code></pre>
             </div>
+            <div class="tab-copy">
+              <span class="install-badge">Recommended</span>
+              <p>Installs the binary, systemd unit, default environment file, man page, sample config, and packaged documentation.</p>
+            </div>
+            <p class="tab-note mono" id="apt-fingerprint-row"></p>
           </div>
+          <div class="tab-panel" id="panel-container" role="tabpanel">
+            <div class="code-block">
+              <div class="code-head"><span class="code-lang">bash</span><button class="copy-btn" type="button" data-copy-target="container-command">Copy</button></div>
+              <pre><code id="container-command">docker pull ghcr.io/netspeedy/blackhole-threats:latest</code></pre>
+            </div>
+            <div class="tab-copy"><p>Use the GHCR image for container-native runtimes with configuration mounted under <code>/config</code>.</p></div>
+          </div>
+          <div class="tab-panel" id="panel-archives" role="tabpanel">
+            <div class="code-block">
+              <div class="code-head"><span class="code-lang">bash</span><button class="copy-btn" type="button" data-copy-target="archive-command">Copy</button></div>
+              <pre><code id="archive-command">Open the latest release and verify sha256sums.txt before installing artifacts.</code></pre>
+            </div>
+            <div class="tab-copy"><p>Download runtime tarballs, Debian packages, source artifacts, and checksums from GitHub Releases.</p></div>
+          </div>
+          <div class="tab-panel" id="panel-source" role="tabpanel">
+            <div class="code-block">
+              <div class="code-head"><span class="code-lang">bash</span><button class="copy-btn" type="button" data-copy-target="source-command">Copy</button></div>
+              <pre><code id="source-command">git clone https://github.com/netspeedy/blackhole-threats.git</code></pre>
+            </div>
+            <div class="tab-copy"><p>Build locally when validating changes, staging a lab, or testing a config before package rollout.</p></div>
+          </div>
+        </div>
+
+        <div class="install-directory" aria-label="Published install channels">
+          <a href="#install" id="install-apt-link" data-install-tab="apt"><strong>Signed APT</strong><span>Debian-family hosts</span></a>
+          <a href="https://ghcr.io/netspeedy/blackhole-threats" id="install-container-link" data-install-tab="container"><strong>GHCR image</strong><span>Container runtimes</span></a>
+          <a href="https://github.com/netspeedy/blackhole-threats/releases" id="install-release-link" data-install-tab="archives"><strong>Release archives</strong><span>Direct artifacts</span></a>
+          <a href="https://github.com/netspeedy/blackhole-threats" id="install-source-link" data-install-tab="source"><strong>Source build</strong><span>Local validation</span></a>
         </div>
       </section>
 
-      <!-- Callout -->
-      <section class="cta wrapper fade-in">
-        <div class="glass-card cta-card text-center relative overflow-hidden">
-          <div class="cta-bg-glow"></div>
-          <h2 class="cta-title">Ready to secure your routing?</h2>
-          <p class="cta-desc">Read the comprehensive operator manual for deeply customized feeds, peering configurations, and management tools.</p>
-          <a href="https://github.com/netspeedy/blackhole-threats#readme" class="btn btn-primary large-btn">Open Documentation</a>
-        </div>
+      <section class="docs-strip wrapper" aria-label="Documentation links">
+        <a href="https://github.com/netspeedy/blackhole-threats/blob/main/docs/operations.md">Operations guide</a>
+        <a href="https://github.com/netspeedy/blackhole-threats/blob/main/docs/config-reference.md">Configuration reference</a>
+        <a href="https://github.com/netspeedy/blackhole-threats/blob/main/docs/feed-behavior.md">Feed behavior</a>
+        <a href="https://github.com/netspeedy/blackhole-threats/blob/main/docs/architecture.md">Architecture</a>
       </section>
     </main>
 
-    <footer class="footer wrapper text-center relative z-10 fade-in">
-      <hr class="dim-divider">
-      <p><strong>Blackhole Threats</strong> | A Go-based RTBH daemon turning threat feeds into BGP announcements.</p>
-      <p class="text-sm text-muted">Published from commit <span id="footer-commit" class="font-mono">---</span> for release <span id="footer-version">---</span></p>
+    <footer class="site-footer">
+      <div class="footer-inner wrapper">
+        <div class="footer-brand">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none">
+            <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-opacity="0.2" stroke-width="1.5" />
+            <circle cx="16" cy="16" r="9.5" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5" />
+            <circle cx="16" cy="16" r="5.5" fill="currentColor" />
+          </svg>
+          <div>
+            <strong>Blackhole Threats</strong>
+            <p>RTBH route automation with signed packages, deterministic route deltas, and first-party release artifacts.</p>
+          </div>
+        </div>
+        <nav class="footer-links" aria-label="Footer links">
+          <a href="https://github.com/netspeedy/blackhole-threats/releases" id="footer-release-link">Releases</a>
+          <a href="#install" id="footer-apt-link" data-install-tab="apt">APT repository</a>
+          <a href="https://ghcr.io/netspeedy/blackhole-threats" id="footer-container-link">Container</a>
+          <a href="https://github.com/netspeedy/blackhole-threats/tree/main/docs" id="footer-docs-link">Docs</a>
+        </nav>
+        <span class="footer-build mono"><span id="footer-version">---</span> &middot; <span id="footer-commit">---</span></span>
+      </div>
     </footer>
-
   </body>
 </html>
