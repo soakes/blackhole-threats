@@ -31,8 +31,6 @@ const requiredDomIds = [
   "apt-command",
   "apt-fingerprint-row",
   "container-command",
-  "archive-command",
-  "source-command",
   "install-apt-link",
   "install-container-link",
   "install-release-link",
@@ -124,13 +122,19 @@ for (const domId of requiredDomIds) {
   assert(indexHtml.includes(`id="${domId}"`), `index.html is missing required id="${domId}"`);
 }
 
-for (const tabId of ["apt", "container", "archives", "source"]) {
+for (const tabId of ["apt", "container"]) {
   assert(indexHtml.includes(`data-tab="${tabId}"`), `index.html is missing data-tab="${tabId}"`);
   assert(indexHtml.includes(`id="panel-${tabId}"`), `index.html is missing id="panel-${tabId}"`);
 }
 
-for (const installTab of ["apt", "container", "archives", "source"]) {
+for (const installTab of ["apt", "container"]) {
   assert(indexHtml.includes(`data-install-tab="${installTab}"`), `index.html is missing data-install-tab="${installTab}"`);
+}
+
+for (const removedInstallTab of ["archives", "source"]) {
+  assert(!indexHtml.includes(`data-tab="${removedInstallTab}"`), `index.html should not render a ${removedInstallTab} command tab`);
+  assert(!indexHtml.includes(`id="panel-${removedInstallTab}"`), `index.html should not render panel-${removedInstallTab}`);
+  assert(!indexHtml.includes(`data-install-tab="${removedInstallTab}"`), `index.html should not route links to the removed ${removedInstallTab} tab`);
 }
 
 assert(mainJs.includes("website-metadata.json"), "main.js must keep website-metadata.json support for Pages refreshes");
@@ -145,6 +149,20 @@ assert(
 
 assert(indexHtml.includes('href="#install"'), 'index.html must retain the in-page install anchor link');
 assert(indexHtml.includes('id="install"'), 'index.html must retain the install section target');
+
+for (const requiredInstallFact of [
+  "amd64",
+  "arm64",
+  "armhf",
+  "deb-src",
+  "linux/amd64",
+  "linux/arm64",
+  "linux/arm",
+  "sha256sums.txt",
+  "go 1.25.0",
+]) {
+  assert(indexHtml.includes(requiredInstallFact), `index.html install matrix must mention ${requiredInstallFact}`);
+}
 
 if (errors.length > 0) {
   console.error("Website validation failed:\n");

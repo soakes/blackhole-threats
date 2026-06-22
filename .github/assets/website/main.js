@@ -183,21 +183,6 @@ docker run -d \\
   );
 
   setText(
-    'archive-command',
-    `curl -LO ${metadata.releaseUrl}/latest/download/sha256sums.txt
-# Download the release artifact that matches your host architecture.
-# Verify it against sha256sums.txt before installing.`,
-  );
-
-  setText(
-    'source-command',
-    `git clone ${metadata.githubUrl}.git
-cd blackhole-threats
-make build
-./dist/blackhole-threats -conf examples/blackhole-threats.yaml -check-config`,
-  );
-
-  setText(
     'apt-fingerprint-row',
     metadata.aptFingerprint ? `Archive fingerprint: ${metadata.aptFingerprint}` : '',
   );
