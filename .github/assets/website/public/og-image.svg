@@ -77,12 +77,12 @@
   <!-- facts row -->
   <g font-family='"Inter", "Helvetica Neue", Arial, sans-serif' font-size="18" font-weight="600" fill="#717a89">
     <text x="72" y="548">Signed APT</text>
-    <text x="184" y="548" fill="#2c333f">/</text>
-    <text x="202" y="548">GHCR image</text>
-    <text x="332" y="548" fill="#2c333f">/</text>
-    <text x="350" y="548">Per-community policy</text>
-    <text x="570" y="548" fill="#2c333f">/</text>
-    <text x="588" y="548">IPv4 &amp; IPv6</text>
+    <text x="186" y="548" fill="#2c333f">/</text>
+    <text x="209" y="548">GHCR image</text>
+    <text x="333" y="548" fill="#2c333f">/</text>
+    <text x="356" y="548">Per-community policy</text>
+    <text x="552" y="548" fill="#2c333f">/</text>
+    <text x="575" y="548">IPv4 &amp; IPv6</text>
   </g>
 
   <!-- bottom hairline + footnote -->
